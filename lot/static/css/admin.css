@@ -1,0 +1,77 @@
+:root,
+html[data-theme="light"],
+html[data-theme="dark"] {
+  --primary: #2c570e;
+  --secondary: #2c570e;
+  --accent: #ffffff;
+  --primary-fg: #ffffff;
+  --header-bg: #2c570e;
+  --header-color: #ffffff;
+  --header-branding-color: #ffffff;
+  --header-link-color: #ffffff;
+  --breadcrumbs-bg: #0a0a0a;
+  --breadcrumbs-link-fg: #ffffff;
+  --breadcrumbs-fg: #d4d4d4;
+  --default-button-bg: #2c570e;
+  --default-button-hover-bg: #1f3f0a;
+  --button-bg: #0a0a0a;
+  --button-hover-bg: #2c570e;
+  --font-family-primary: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html[data-theme="light"],
+:root {
+  --link-fg: #2c570e;
+  --link-hover-color: #0a0a0a;
+  --selected-row: #eef5e8;
+}
+
+html[data-theme="dark"] {
+  --link-fg: #8cc063;
+  --link-hover-color: #ffffff;
+  --selected-row: #1d2b14;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --link-fg: #8cc063;
+    --link-hover-color: #ffffff;
+    --selected-row: #1d2b14;
+  }
+}
+
+#header { padding: 14px 32px; }
+.lot-brand { font-weight: 900; font-size: 22px; letter-spacing: -0.02em; text-transform: uppercase; color: #fff !important; }
+.lot-brand span { color: #0a0a0a; }
+.lot-brand small { font-size: 11px; font-weight: 700; letter-spacing: 0.25em; color: rgba(255, 255, 255, 0.7); margin-left: 4px; }
+#user-tools a { border-bottom-color: rgba(255, 255, 255, 0.4); }
+
+.module h2, .module caption, .inline-group h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+#changelist-filter h2 { background: #0a0a0a; color: #ffffff; }
+#result_list tbody tr:hover { background: var(--selected-row); }
+#result_list input[name$="-stock"] { width: 5em; font-weight: 700; }
+
+.lot-dash { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.lot-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 18px 20px;
+  background: var(--body-bg); border: 1px solid var(--hairline-color); border-left: 4px solid #d4d4d4;
+  text-decoration: none !important; color: var(--body-fg) !important;
+}
+.lot-card:hover { border-left-color: #2c570e; }
+.lot-card.is-hot { border-left-color: #0a0a0a; background: #2c570e; color: #fff !important; }
+.lot-num { font-size: 32px; font-weight: 900; line-height: 1; }
+.lot-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.8; }
+.lot-low table { width: 100%; }
+.lot-out { color: #b91c1c; }

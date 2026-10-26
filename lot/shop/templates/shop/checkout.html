@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}Checkout — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container-x pt-10 md:pt-16">
+  <p class="eyebrow">Step 1 of 2 · Details</p>
+  <h1 class="h-display mt-2 text-5xl md:text-7xl">Checkout</h1>
+
+  {% if not stripe_ready %}
+    <div class="mt-6 border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <strong>Test mode note:</strong> Stripe keys aren't set, so payment is disabled. Add <code>STRIPE_SECRET_KEY</code> to <code>.env</code> and restart the server (see README).
+    </div>
+  {% endif %}
+
+  <form method="post" class="mt-10 grid gap-12 lg:grid-cols-12" data-checkout novalidate>
+    {% csrf_token %}
+    <div class="space-y-10 lg:col-span-7">
+      {% if form.non_field_errors %}<div class="text-sm text-red-600">{{ form.non_field_errors }}</div>{% endif %}
+
+      <fieldset>
+        <div class="flex items-baseline justify-between">
+          <legend class="h-display text-xl">Contact</legend>
+          {% if not user.is_authenticated %}
+            <p class="text-xs text-neutral-500">Have an account? <a href="{% url 'core:login' %}?next={% url 'shop:checkout' %}" class="font-semibold text-ink underline">Log in</a></p>
+          {% endif %}
+        </div>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          {% field form.email "sm:col-span-2" %}
+          {% field form.full_name %}
+          {% field form.phone %}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="h-display text-xl">Ship to</legend>
+        <div class="mt-4 grid gap-4 sm:grid-cols-6">
+          {% field form.address_line1 "sm:col-span-4" %}
+          {% field form.address_line2 "sm:col-span-2" %}
+          {% field form.city "sm:col-span-3" %}
+          {% field form.region "sm:col-span-3" %}
+          {% field form.postal_code "sm:col-span-2" %}
+          {% field form.country "sm:col-span-4" %}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="h-display text-xl">Shipping method</legend>
+        <div class="mt-4 space-y-2">
+          {% for m in shipping_methods %}
+            <label class="flex cursor-pointer items-center gap-4 border border-neutral-300 px-4 py-4 transition has-[:checked]:border-ink has-[:checked]:bg-bone">
+              <input type="radio" name="shipping_method" value="{{ m.pk }}" data-shipping-price="{{ m.price }}" data-shipping-label="{{ m.price|money }}"
+                class="h-4 w-4 accent-ink" {% if m.pk|stringformat:"s" == form.shipping_method.value|stringformat:"s" %}checked{% endif %} required>
+              <span class="flex-1">
+                <span class="block text-sm font-bold uppercase tracking-wide">{{ m.name }}</span>
+                {% if m.description %}<span class="block text-xs text-neutral-500">{{ m.description }}</span>{% endif %}
+              </span>
+              <span class="text-sm font-semibold tabular-nums">{% if m.price %}{{ m.price|money }}{% else %}Free{% endif %}</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% for error in form.shipping_method.errors %}<p class="mt-2 text-xs font-semibold text-red-600">{{ error }}</p>{% endfor %}
+      </fieldset>
+    </div>
+
+    <aside class="lg:col-span-5">
+      <div class="bg-bone p-6 lg:sticky lg:top-24">
+        <h2 class="eyebrow text-ink">Order summary</h2>
+        <ul class="mt-6 space-y-4">
+          {% for line in lines %}
+            <li class="flex gap-3">
+              <div class="relative w-16 shrink-0 bg-white">
+                {% with img=line.product.primary_image %}{% if img %}<img src="{{ img.image.url }}" alt="" class="aspect-[4/5] w-full object-cover">{% endif %}{% endwith %}
+                <span class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">{{ line.quantity }}</span>
+              </div>
+              <div class="flex-1 text-sm">
+                <p class="font-bold uppercase tracking-wide">{{ line.product.name }}</p>
+                <p class="text-neutral-500">{{ line.variant.name }}</p>
+              </div>
+              <p class="text-sm font-semibold tabular-nums">{{ line.line_total|money }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+        <dl class="mt-6 space-y-2 border-t border-neutral-300 pt-4 text-sm">
+          <div class="flex justify-between"><dt>Subtotal</dt><dd class="tabular-nums" data-subtotal="{{ cart.subtotal }}">{{ cart.subtotal|money }}</dd></div>
+          <div class="flex justify-between"><dt>Shipping</dt><dd class="tabular-nums" data-shipping-out>—</dd></div>
+        </dl>
+        <div class="mt-4 flex justify-between border-t border-neutral-300 pt-4 text-base font-bold">
+          <span>Total</span><span class="tabular-nums" data-total-out>{{ cart.subtotal|money }}</span>
+        </div>
+        <button class="btn-primary mt-6 w-full py-4 text-sm" {% if not stripe_ready %}disabled{% endif %}>
+          Continue to payment
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <p class="mt-3 flex items-center justify-center gap-2 text-xs text-neutral-500">
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          You'll pay on Stripe's secure checkout page.
+        </p>
+        <a href="{% url 'shop:cart' %}" class="mt-4 block text-center text-xs font-semibold uppercase tracking-[0.15em] text-neutral-500 hover:text-ink">← Back to cart</a>
+      </div>
+    </aside>
+  </form>
+</div>
+{% endblock %}

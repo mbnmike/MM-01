@@ -1,0 +1,78 @@
+{% if overlay %}
+<header data-header data-overlay data-scrolled="false"
+  class="group/header fixed inset-x-0 top-0 z-40 border-b border-transparent text-white transition-colors duration-300 data-[scrolled=true]:border-neutral-200 data-[scrolled=true]:bg-white data-[scrolled=true]:text-ink">
+{% else %}
+<header data-header class="group/header sticky top-0 z-40 border-b border-neutral-200 bg-white text-ink">
+{% endif %}
+  <div class="container-x flex h-16 items-center justify-between gap-4 md:h-20">
+    <details class="group md:hidden" data-mobile-nav>
+      <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden" aria-label="Menu">
+        <svg class="h-6 w-6 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="hidden h-6 w-6 group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </summary>
+      <nav class="absolute inset-x-0 top-full z-50 border-b border-neutral-200 bg-white px-4 pb-6 pt-2 text-ink shadow-xl">
+        {% if store_enabled %}
+          <a href="{% url 'shop:collection_all' %}" class="block border-b border-neutral-100 py-3 text-sm font-bold uppercase tracking-widest">All products</a>
+          {% for c in nav_categories %}
+            <a href="{{ c.get_absolute_url }}" class="block border-b border-neutral-100 py-3 text-sm font-semibold uppercase tracking-widest">{{ c.name }}</a>
+          {% endfor %}
+        {% else %}
+          <a href="{% url 'core:home' %}" class="block border-b border-neutral-100 py-3 text-sm font-semibold uppercase tracking-widest">Home</a>
+        {% endif %}
+        <a href="{% url 'blog:list' %}" class="block border-b border-neutral-100 py-3 text-sm font-semibold uppercase tracking-widest">Journal</a>
+        {% if store_enabled %}
+          <a href="{% url 'core:faq' %}" class="block border-b border-neutral-100 py-3 text-sm font-semibold uppercase tracking-widest">FAQ</a>
+        {% endif %}
+        <a href="{% url 'core:contact' %}" class="block py-3 text-sm font-semibold uppercase tracking-widest">Contact</a>
+      </nav>
+    </details>
+
+    <a href="{% url 'core:home' %}" class="font-display text-2xl tracking-tight md:text-3xl" aria-label="{{ brand.name }} home">
+      {{ brand.name }}<span class="text-forest">.</span>
+    </a>
+
+    <nav class="hidden flex-1 items-center justify-center gap-8 text-xs font-bold uppercase tracking-[0.18em] md:flex">
+      {% if store_enabled %}
+      <div class="group/shop relative">
+        <a href="{% url 'shop:collection_all' %}" class="flex items-center gap-1.5 py-3 decoration-forest decoration-2 underline-offset-8 hover:underline" aria-haspopup="true">
+          Shop
+          <svg class="h-3 w-3 transition group-hover/shop:rotate-180 group-focus-within/shop:rotate-180" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </a>
+        <div class="invisible absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2 opacity-0 transition duration-150 group-focus-within/shop:visible group-focus-within/shop:opacity-100 group-hover/shop:visible group-hover/shop:opacity-100">
+          <ul class="w-60 border border-neutral-200 bg-white py-2 text-ink shadow-xl">
+            <li><a href="{% url 'shop:collection_all' %}" class="block px-5 py-3 hover:bg-forest hover:text-white">All products</a></li>
+            {% for c in nav_categories %}
+              <li><a href="{{ c.get_absolute_url }}" class="block px-5 py-3 hover:bg-forest hover:text-white">{{ c.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% for c in nav_categories %}
+        <a href="{{ c.get_absolute_url }}" class="hidden decoration-forest decoration-2 underline-offset-8 hover:underline lg:block">{{ c.name }}</a>
+      {% endfor %}
+      {% endif %}
+      <a href="{% url 'blog:list' %}" class="decoration-forest decoration-2 underline-offset-8 hover:underline {% if request.resolver_match.namespace == 'blog' %}underline{% endif %}"{% if request.resolver_match.namespace == 'blog' %} aria-current="page"{% endif %}>Journal</a>
+      {% if store_enabled %}
+        <a href="{% url 'core:faq' %}" class="decoration-forest decoration-2 underline-offset-8 hover:underline">FAQ</a>
+      {% else %}
+        <a href="{% url 'core:contact' %}" class="decoration-forest decoration-2 underline-offset-8 hover:underline">Contact</a>
+      {% endif %}
+    </nav>
+
+    {% if store_enabled %}
+    <div class="flex items-center gap-1">
+      <a href="{% url 'core:account' %}" class="flex h-10 w-10 items-center justify-center" aria-label="Account">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      </a>
+      <a href="{% url 'shop:cart' %}" class="relative flex h-10 items-center gap-2 px-2" aria-label="Cart, {{ cart_count }} items">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+        {% if cart_count %}
+          <span class="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-forest px-1 text-[11px] font-bold text-white">{{ cart_count }}</span>
+        {% endif %}
+      </a>
+    </div>
+    {% else %}
+    <div class="w-10 md:hidden" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+</header>

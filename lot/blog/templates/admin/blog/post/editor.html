@@ -1,0 +1,168 @@
+{% extends "admin/change_form.html" %}
+{% load static admin_urls %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/editor.css' %}?v={{ asset_version }}">{% endblock %}
+{% block extrahead %}{{ block.super }}<script src="{% static 'js/editor.js' %}?v={{ asset_version }}" defer></script>{% endblock %}
+{% block bodyclass %}{{ block.super }} lot-editor-page{% endblock %}
+
+{% block field_sets %}
+{{ editor_config|json_script:"editor-config" }}
+{% with f=adminform.form %}
+<input type="hidden" name="_continue" value="1">
+<div class="lot-editor">
+
+  <div class="lot-bar">
+    <div class="lot-bar-left">
+      <a href="{% url opts|admin_urlname:'changelist' %}" class="lot-back">← All posts</a>
+      {% if add %}<span class="lot-pill">New draft</span>
+      {% elif post_obj.is_scheduled %}<span class="lot-pill is-amber" title="{{ post_obj.published_at }}">Scheduled</span>
+      {% elif post_obj.is_live %}<span class="lot-pill is-green">Published</span>
+      {% else %}<span class="lot-pill">Draft</span>{% endif %}
+      <span class="lot-savestate" data-save-state aria-live="polite">{% if add %}Not saved yet{% else %}All changes saved{% endif %}</span>
+    </div>
+    <div class="lot-bar-right">
+      {% if post_obj.is_live %}<a class="lot-link" href="{{ post_obj.get_absolute_url }}" target="_blank" rel="noopener">View live ↗</a>{% endif %}
+      <button type="submit" class="lot-btn" data-preview-btn formtarget="_blank" formnovalidate
+        formaction="{% if add %}{% url 'admin:blog_post_preview_new' %}{% else %}{% url 'admin:blog_post_preview' post_obj.pk %}{% endif %}"
+        title="Open a full-page preview of what's in the editor (doesn't save)">Preview</button>
+      {% if post_obj.status == "published" %}
+        <button type="submit" name="_unpublish" value="1" class="lot-btn" data-confirm="Unpublish this post? It will be hidden from visitors until you publish it again.">Unpublish</button>
+        <button type="submit" name="_save" value="1" class="lot-btn is-primary" title="Ctrl+S">Update</button>
+      {% else %}
+        <button type="submit" name="_save" value="1" class="lot-btn" title="Ctrl+S">Save draft</button>
+        <button type="submit" name="_publish" value="1" class="lot-btn is-primary">Publish</button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="lot-restore" data-restore hidden>
+    <span>You have unsaved writing from <strong data-restore-time></strong> that's newer than this version.</span>
+    <button type="button" class="lot-btn is-primary" data-restore-yes>Restore it</button>
+    <button type="button" class="lot-btn" data-restore-no>Discard</button>
+  </div>
+
+  <div class="lot-cols">
+    <div class="lot-main">
+      {{ f.title.errors }}
+      <label for="{{ f.title.id_for_label }}" class="lot-sr">Title</label>
+      {{ f.title }}
+      <div class="lot-slug">
+        <label for="{{ f.slug.id_for_label }}">/blog/</label>{{ f.slug }}<span>/</span>
+      </div>
+      {{ f.slug.errors }}
+      <label for="{{ f.excerpt.id_for_label }}" class="lot-sr">Excerpt</label>
+      {{ f.excerpt }}
+      {{ f.excerpt.errors }}
+
+      <div class="lot-editor-box" data-editor data-mode="write">
+        <div class="lot-toolbar" role="toolbar" aria-label="Formatting">
+          <div class="lot-tools">
+            <button type="button" data-cmd="h2" title="Heading">H2</button>
+            <button type="button" data-cmd="h3" title="Subheading">H3</button>
+            <span class="lot-sep"></span>
+            <button type="button" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+            <button type="button" data-cmd="link" title="Link (Ctrl+K)">Link</button>
+            <span class="lot-sep"></span>
+            <button type="button" data-cmd="quote" title="Quote">“ ”</button>
+            <button type="button" data-cmd="ul" title="Bulleted list">• List</button>
+            <button type="button" data-cmd="ol" title="Numbered list">1. List</button>
+            <button type="button" data-cmd="hr" title="Divider">—</button>
+            <span class="lot-sep"></span>
+            <button type="button" data-cmd="image" title="Upload a photo (or drag &amp; drop / paste into the editor)">Photo</button>
+            <button type="button" data-cmd="gallery" title="Upload several photos as a gallery">Gallery</button>
+            <button type="button" data-cmd="library" title="Insert a photo you've already uploaded">Library</button>
+          </div>
+          <div class="lot-modes" role="group" aria-label="View">
+            <button type="button" data-mode-btn="write" aria-pressed="true">Write</button>
+            <button type="button" data-mode-btn="split" aria-pressed="false">Split</button>
+            <button type="button" data-mode-btn="preview" aria-pressed="false">Preview</button>
+            <button type="button" data-cmd="focus" title="Distraction-free (Esc to exit)" aria-label="Focus mode">⤢</button>
+          </div>
+        </div>
+        <div class="lot-panes">
+          <div class="lot-pane-write">
+            <label for="{{ f.body.id_for_label }}" class="lot-sr">Post body</label>
+            {{ f.body }}
+          </div>
+          <div class="lot-pane-preview">
+            <iframe title="Live preview" data-preview-frame sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+          </div>
+        </div>
+        <div class="lot-editor-foot">
+          <span data-wordcount></span>
+          <span data-upload-status aria-live="polite"></span>
+        </div>
+      </div>
+      {{ f.body.errors }}
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden data-file-input>
+
+      <details class="lot-help">
+        <summary>Formatting guide</summary>
+        <div class="lot-help-grid">
+          <code>## Heading</code><span>Section heading (<code>###</code> for smaller)</span>
+          <code>**bold**  *italic*</code><span>Emphasis</span>
+          <code>[text](https://…)</code><span>Link</span>
+          <code>&gt; quote</code><span>Pull quote</span>
+          <code>- item</code> <span>Bulleted list (<code>1.</code> for numbered)</span>
+          <code>![Caption](photo-url)</code><span>Photo on its own line: full-width with the caption underneath. <code>![](url)</code> for no caption.</span>
+          <code>![A](url1)<br>![B](url2)</code><span>Photos on consecutive lines (no blank line between) become a gallery.</span>
+          <code>---</code><span>Divider</span>
+        </div>
+        <p>Drag photos into the editor or paste them from the clipboard to upload. Your writing is backed up automatically every few seconds while you type.</p>
+      </details>
+    </div>
+
+    <aside class="lot-side">
+      <section class="lot-card">
+        <h3>Publishing</h3>
+        {% include "admin/blog/post/_field.html" with field=f.published_at %}
+        {% include "admin/blog/post/_field.html" with field=f.updated_on %}
+        {% include "admin/blog/post/_field.html" with field=f.is_featured check=True %}
+        {% include "admin/blog/post/_field.html" with field=f.allow_comments check=True %}
+        {% include "admin/blog/post/_field.html" with field=f.author %}
+        {% if post_obj and has_delete_permission %}
+          <a class="lot-delete" href="{% url opts|admin_urlname:'delete' post_obj.pk|admin_urlquote %}">Delete post…</a>
+        {% endif %}
+      </section>
+
+      <section class="lot-card">
+        <h3>Cover photo</h3>
+        <img class="lot-cover" data-cover-preview alt="" {% if post_obj.cover_image %}src="{{ post_obj.card_image.url }}"{% else %}hidden{% endif %}>
+        {% include "admin/blog/post/_field.html" with field=f.cover_image %}
+        {% include "admin/blog/post/_field.html" with field=f.cover_alt %}
+        {% include "admin/blog/post/_field.html" with field=f.cover_caption %}
+      </section>
+
+      <section class="lot-card">
+        <h3>Tags</h3>
+        {{ f.tags }}
+        {{ f.tags.errors }}
+      </section>
+
+      <details class="lot-card" {% if f.meta_description.errors %}open{% endif %}>
+        <summary>Search &amp; sharing</summary>
+        {% include "admin/blog/post/_field.html" with field=f.meta_description %}
+        {% include "admin/blog/post/_field.html" with field=f.schema_type %}
+      </details>
+
+      <details class="lot-card">
+        <summary>Shop the story</summary>
+        {% include "admin/blog/post/_field.html" with field=f.related_products %}
+      </details>
+    </aside>
+  </div>
+
+  <dialog class="lot-library" data-library>
+    <div class="lot-library-head">
+      <strong>Media library</strong>
+      <button type="button" class="lot-btn" data-library-close>Close</button>
+    </div>
+    <p class="lot-library-empty" data-library-empty hidden>No photos yet. Use “Photo” to upload one.</p>
+    <div class="lot-library-grid" data-library-grid></div>
+  </dialog>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block submit_buttons_bottom %}{% endblock %}

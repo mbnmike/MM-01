@@ -1,0 +1,67 @@
+{% load store %}
+<section id="comments" class="container-x mt-16 max-w-[44rem] scroll-mt-28 md:mt-20" aria-labelledby="comments-heading">
+  <h2 id="comments-heading" class="h-display text-2xl md:text-3xl">
+    Comments{% if comments %} <span class="text-neutral-400">{{ comments|length }}</span>{% endif %}
+  </h2>
+
+  {% if preview %}
+    <p class="mt-6 text-sm text-neutral-500">Comments appear here once the post is published.</p>
+  {% else %}
+    {% if comments %}
+      <ol class="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
+        {% for c in comments %}
+          <li id="comment-{{ c.pk }}" class="scroll-mt-28 py-7">
+            <div class="flex items-center gap-3">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bone text-sm font-bold text-ink" aria-hidden="true">{{ c.display_name|first|upper }}</span>
+              <div class="leading-tight">
+                <p class="text-sm font-semibold">{{ c.display_name }}</p>
+                <time class="text-xs text-neutral-500" datetime="{{ c.created_at|date:'c' }}">{{ c.created_at|date:"M j, Y · g:i A" }}</time>
+              </div>
+            </div>
+            <div class="mt-3 break-words pl-12 font-serif text-[1.05rem] leading-relaxed text-neutral-800">{{ c.body|linebreaksbr }}</div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="mt-6 text-neutral-500">No comments yet.{% if comments_open %} Be the first to say something.{% endif %}</p>
+    {% endif %}
+
+    {% if comments_open %}
+      <form id="comment-form" method="post" action="{% url 'blog:comment' post.slug %}#comment-form" class="mt-10 scroll-mt-28 bg-bone p-6 md:p-8">
+        {% csrf_token %}
+        <h3 class="text-lg font-bold tracking-tight">Leave a comment</h3>
+        <p class="mt-1 text-sm text-neutral-600">No account needed.</p>
+
+        {% if form.non_field_errors %}
+          <div class="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+            {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+          </div>
+        {% elif form.errors %}
+          <div class="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">Please fix the highlighted fields.</div>
+        {% endif %}
+
+        <div class="mt-6 grid gap-5 sm:grid-cols-2">
+          {% field form.name %}
+          {% field form.email %}
+        </div>
+        {% field form.body css="mt-5" %}
+
+        <div class="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+          <label for="{{ form.website.id_for_label }}">Leave this field empty</label>
+          {{ form.website }}
+        </div>
+        <input type="hidden" name="token" value="{{ comment_token }}">
+
+        <p class="mt-5 text-xs leading-relaxed text-neutral-500">
+          <strong class="font-semibold text-neutral-700">Privacy:</strong>
+          Your email is never shown publicly or shared. We use it only to moderate comments and, if needed, to reply to you about your comment.
+          It's kept as long as your comment is on the site; email <a class="underline" href="mailto:{{ brand.email }}">{{ brand.email }}</a> to have it removed.
+          Comments may be held for review before they appear.
+        </p>
+        <button class="btn-primary mt-6">Post comment</button>
+      </form>
+    {% else %}
+      <p class="mt-8 border-t border-neutral-200 pt-6 text-sm text-neutral-500">Comments are closed on this post.</p>
+    {% endif %}
+  {% endif %}
+</section>

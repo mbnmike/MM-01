@@ -1,0 +1,34 @@
+<div class="lot-dash">
+  <a class="lot-card {% if to_fulfill %}is-hot{% endif %}" href="{% url 'admin:shop_order_changelist' %}?status__exact=paid&fulfillment_status__exact=unfulfilled">
+    <span class="lot-num">{{ to_fulfill }}</span><span class="lot-label">Paid orders to ship</span>
+  </a>
+  <a class="lot-card" href="{% url 'admin:shop_order_changelist' %}?status__exact=pending">
+    <span class="lot-num">{{ awaiting_payment }}</span><span class="lot-label">Awaiting payment</span>
+  </a>
+  <a class="lot-card {% if open_messages %}is-hot{% endif %}" href="{% url 'admin:core_contactmessage_changelist' %}?handled__exact=0">
+    <span class="lot-num">{{ open_messages }}</span><span class="lot-label">Unread messages</span>
+  </a>
+  <a class="lot-card {% if pending_comments %}is-hot{% endif %}" href="{% url 'admin:blog_comment_changelist' %}?status__exact=pending">
+    <span class="lot-num">{{ pending_comments }}</span><span class="lot-label">Comments to review</span>
+  </a>
+  <a class="lot-card" href="{% url 'admin:blog_post_add' %}">
+    <span class="lot-num">+</span><span class="lot-label">Write a post{% if draft_posts %} · {{ draft_posts }} draft{{ draft_posts|pluralize }}{% endif %}</span>
+  </a>
+  <a class="lot-card" href="{% url 'admin:core_sitesettings_change' site_settings.pk %}">
+    <span class="lot-num">{% if site_settings.store_enabled %}On{% else %}Off{% endif %}</span><span class="lot-label">Store {% if site_settings.store_enabled %}visible · hide it{% else %}hidden · turn it on{% endif %}</span>
+  </a>
+</div>
+{% if low_stock %}
+<div class="module lot-low">
+  <h2>Low stock (≤ {{ low_threshold }}) — <a href="{% url 'admin:shop_variant_changelist' %}?level=low">edit inventory</a></h2>
+  <table>
+    {% for v in low_stock %}
+      <tr>
+        <td><a href="{% url 'admin:shop_product_change' v.product_id %}">{{ v.product.name }}</a></td>
+        <td>{{ v.name }}</td>
+        <td style="text-align:right"><strong class="{% if v.stock == 0 %}lot-out{% endif %}">{% if v.stock == 0 %}Sold out{% else %}{{ v.stock }} left{% endif %}</strong></td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}

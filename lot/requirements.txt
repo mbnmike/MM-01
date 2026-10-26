@@ -1,0 +1,12 @@
+Django>=5.2,<6.0
+stripe>=8.0
+dj-database-url>=2.1
+python-dotenv>=1.0
+whitenoise>=6.6
+Pillow>=10.1
+# Postgres driver. Only used when DATABASE_URL points at Postgres; SQLite needs nothing extra.
+psycopg[binary]>=3.1
+markdown>=3.6
+nh3>=0.2.17
+gunicorn>=22.0; sys_platform != "win32"
+# Optional, only if you set S3_BUCKET for uploads: django-storages[s3]>=1.14

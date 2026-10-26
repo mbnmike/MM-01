@@ -1,0 +1,15 @@
+# Local Postgres for development. Start with `docker compose up -d`, then set in .env:
+#   DATABASE_URL=postgres://lot:lot@127.0.0.1:5432/lot
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: lot
+      POSTGRES_USER: lot
+      POSTGRES_PASSWORD: lot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

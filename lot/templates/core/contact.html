@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}Contact — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container-x pt-10 md:pt-16">
+  <div class="grid gap-12 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <p class="eyebrow">Contact</p>
+      <h1 class="h-display mt-2 text-5xl md:text-7xl">Say hi.</h1>
+      <p class="mt-4 max-w-sm text-neutral-600">{% if store_enabled %}Order questions, wholesale, collabs, or a photo of your build.{% else %}Questions, collabs, or a photo of your build.{% endif %} We reply within one business day.</p>
+      <dl class="mt-10 space-y-5 text-sm">
+        <div><dt class="eyebrow">Email</dt><dd class="mt-1"><a href="mailto:{{ brand.email }}" class="font-semibold underline">{{ brand.email }}</a></dd></div>
+        <div><dt class="eyebrow">Hours</dt><dd class="mt-1">Mon–Fri, 10:00–18:00</dd></div>
+      </dl>
+    </div>
+    <form method="post" class="space-y-5 lg:col-span-7">
+      {% csrf_token %}
+      <div class="grid gap-5 sm:grid-cols-2">
+        {% field form.name %}
+        {% field form.email %}
+      </div>
+      {% if store_enabled %}{% field form.order_number %}{% endif %}
+      {% field form.message %}
+      <button class="btn-primary">Send message</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

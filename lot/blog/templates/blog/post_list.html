@@ -1,0 +1,166 @@
+{% extends "blog/base_blog.html" %}
+
+{% block title %}{% if selected_month %}{{ selected_month|date:"F Y" }} — {% elif tag %}#{{ tag.name }} — {% elif query %}Search: {{ query }} — {% endif %}{{ cfg.title }} — {{ brand.name }}{% endblock %}
+{% block meta_description %}{% if selected_month %}Posts from {{ selected_month|date:"F Y" }}.{% else %}{{ cfg.intro|default:brand.description }}{% endif %}{% endblock %}
+{% block og_title %}{{ cfg.title }} — {{ brand.name }}{% endblock %}
+{% block og_description %}{{ cfg.intro|default:brand.description }}{% endblock %}
+{% block blog_head %}
+  {% if featured.cover_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ featured.cover_image.url }}">{% endif %}
+  {% if query or page.number > 1 %}<meta name="robots" content="noindex, follow">{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-x pt-10 md:pt-16">
+  <header class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+    <div class="max-w-2xl">
+      {% if is_filtered %}
+        <a href="{% url 'blog:list' %}" class="eyebrow hover:text-ink">← {{ cfg.title }}</a>
+        <h1 class="h-display mt-3 text-5xl md:text-7xl">
+          {% if selected_month %}{{ selected_month|date:"F Y" }}{% elif tag %}#{{ tag.name }}{% else %}Search{% endif %}
+        </h1>
+        {% if selected_month %}<p class="mt-4 text-neutral-600">{{ page.paginator.count }} post{{ page.paginator.count|pluralize }}</p>{% endif %}
+        {% if query %}<p class="mt-4 text-neutral-600">{{ page.paginator.count }} result{{ page.paginator.count|pluralize }} for “{{ query }}”</p>{% endif %}
+      {% else %}
+        <p class="eyebrow">{{ brand.name }} / Blog</p>
+        <h1 class="h-display mt-3 text-6xl md:text-8xl">{{ cfg.title }}<span class="text-forest">.</span></h1>
+        {% if cfg.intro %}<p class="mt-4 max-w-xl font-serif text-lg leading-relaxed text-neutral-600 md:text-xl">{{ cfg.intro }}</p>{% endif %}
+      {% endif %}
+    </div>
+    <form action="{% url 'blog:list' %}" method="get" role="search" class="w-full md:w-80">
+      <label for="blog-search" class="sr-only">Search the blog</label>
+      <div class="flex border-b-2 border-ink focus-within:border-forest">
+        <input id="blog-search" type="search" name="q" value="{{ query }}" placeholder="Search posts" maxlength="100"
+          class="w-full border-0 bg-transparent px-0 py-2.5 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-0">
+        <button class="px-2 text-ink hover:text-forest" aria-label="Search">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </button>
+      </div>
+    </form>
+  </header>
+
+  {% if months %}
+    <nav class="-mx-4 mt-10 overflow-x-auto border-y border-neutral-200 px-4 sm:mx-0 sm:px-0" aria-label="Browse by month">
+      <ul class="flex min-w-max gap-7 text-xs font-bold uppercase tracking-[0.18em]">
+        <li><a href="{% url 'blog:list' %}" class="block border-b-2 py-4 transition {% if not is_filtered %}border-forest text-ink{% else %}border-transparent text-neutral-500 hover:text-ink{% endif %}"{% if not is_filtered %} aria-current="page"{% endif %}>All posts</a></li>
+        {% for m, n in months %}
+          <li><a href="{% url 'blog:month' m.year m.month %}" class="block border-b-2 py-4 transition {% if selected_month == m %}border-forest text-ink{% else %}border-transparent text-neutral-500 hover:text-ink{% endif %}"{% if selected_month == m %} aria-current="page"{% endif %}>{{ m|date:"M Y" }} <span class="font-medium text-neutral-400">{{ n }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+  {% endif %}
+
+  {% if featured %}
+    <section class="mt-10" aria-label="Featured post">
+      <a href="{{ featured.get_absolute_url }}" class="group relative block overflow-hidden bg-ink text-white">
+        {% if featured.cover_image %}
+          <img src="{{ featured.cover_image.url }}" alt="{{ featured.cover_alt }}" fetchpriority="high" decoding="async"
+            {% if featured.cover_width %}width="{{ featured.cover_width }}" height="{{ featured.cover_height }}"{% endif %}
+            class="aspect-[4/5] w-full object-cover transition duration-1000 ease-out group-hover:scale-[1.02] sm:aspect-[16/10] lg:aspect-[21/9]">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
+        {% else %}
+          <div class="aspect-[4/5] w-full bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_60%)] sm:aspect-[16/10] lg:aspect-[21/9]"></div>
+        {% endif %}
+        <div class="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14">
+          <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-white/70">Featured</p>
+          <h2 class="h-display mt-3 max-w-4xl text-4xl sm:text-5xl lg:text-7xl">{{ featured.title }}</h2>
+          {% if featured.excerpt %}<p class="mt-4 hidden max-w-2xl font-serif text-lg leading-relaxed text-white/80 sm:block md:text-xl">{{ featured.excerpt }}</p>{% endif %}
+          <p class="mt-6 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
+            <time datetime="{{ featured.published_at|date:'c' }}">{{ featured.published_at|date:"F j, Y" }}</time>
+            <span aria-hidden="true">·</span> {{ featured.reading_minutes }} min read
+            <span class="ml-2 inline-flex items-center gap-2 text-white transition group-hover:gap-3">Read <span aria-hidden="true">→</span></span>
+          </p>
+        </div>
+      </a>
+    </section>
+  {% endif %}
+
+  {% if page.object_list %}
+    {% if selected_month %}
+      <div class="mt-12 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+        {% for post in page %}{% include "blog/_card.html" %}{% endfor %}
+      </div>
+    {% else %}
+      {% regroup page.object_list by published_month as month_groups %}
+      {% for group in month_groups %}
+        <section class="mt-16 md:mt-20" aria-labelledby="month-{{ group.grouper|date:'Y-m' }}">
+          <div class="flex items-baseline justify-between gap-4 border-b border-neutral-200 pb-3">
+            <h2 id="month-{{ group.grouper|date:'Y-m' }}" class="h-display text-2xl md:text-3xl">{{ group.grouper|date:"F Y" }}</h2>
+            {% if not is_filtered %}<a href="{% url 'blog:month' group.grouper.year group.grouper.month %}" class="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500 hover:text-forest">All {{ group.grouper|date:"F" }} posts →</a>{% endif %}
+          </div>
+          <div class="mt-8 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {% for post in group.list %}{% include "blog/_card.html" %}{% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    {% endif %}
+  {% elif not featured %}
+    <div class="mt-12 border border-dashed border-neutral-300 px-6 py-20 text-center">
+      {% if query %}
+        <p class="font-serif text-xl">Nothing matches “{{ query }}”.</p>
+        <p class="mt-2 text-sm text-neutral-500">Try a different word, or <a class="link-accent" href="{% url 'blog:list' %}">browse all posts</a>.</p>
+      {% elif is_filtered %}
+        <p class="font-serif text-xl">No posts here yet.</p>
+        <p class="mt-2 text-sm text-neutral-500"><a class="link-accent" href="{% url 'blog:list' %}">See all posts</a></p>
+      {% else %}
+        <p class="font-serif text-xl">The first story is on its way.</p>
+        <p class="mt-2 text-sm text-neutral-500">Check back soon.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if page.has_other_pages %}
+    <nav class="mt-16 flex items-center justify-between border-t border-neutral-200 pt-6 text-xs font-bold uppercase tracking-[0.18em]" aria-label="Pagination">
+      {% if page.has_previous %}
+        <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}" class="hover:text-forest">← Newer</a>
+      {% else %}<span class="text-neutral-300">← Newer</span>{% endif %}
+      <ol class="hidden items-center gap-1 sm:flex">
+        {% for n in page.paginator.page_range %}
+          {% if n == page.number %}
+            <li><span class="flex h-9 w-9 items-center justify-center bg-ink text-white" aria-current="page">{{ n }}</span></li>
+          {% elif n == 1 or n == page.paginator.num_pages or n|add:"-2" <= page.number and n|add:"2" >= page.number %}
+            <li><a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ n }}" class="flex h-9 w-9 items-center justify-center hover:bg-neutral-100">{{ n }}</a></li>
+          {% elif n == 2 or n == page.paginator.num_pages|add:"-1" %}
+            <li class="px-1 text-neutral-400">…</li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+      <span class="text-neutral-500 sm:hidden">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}
+        <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}" class="hover:text-forest">Older →</a>
+      {% else %}<span class="text-neutral-300">Older →</span>{% endif %}
+    </nav>
+  {% endif %}
+
+  {% if selected_month %}
+    <nav class="mt-16 grid grid-cols-2 gap-4 border-t border-neutral-200 pt-6" aria-label="Other months">
+      <div>
+        {% if newer_month %}
+          <a href="{% url 'blog:month' newer_month.year newer_month.month %}" class="group block">
+            <span class="eyebrow">← Newer</span>
+            <span class="mt-1 block font-display text-xl uppercase group-hover:text-forest md:text-2xl">{{ newer_month|date:"F Y" }}</span>
+          </a>
+        {% endif %}
+      </div>
+      <div class="text-right">
+        {% if older_month %}
+          <a href="{% url 'blog:month' older_month.year older_month.month %}" class="group block">
+            <span class="eyebrow">Older →</span>
+            <span class="mt-1 block font-display text-xl uppercase group-hover:text-forest md:text-2xl">{{ older_month|date:"F Y" }}</span>
+          </a>
+        {% endif %}
+      </div>
+    </nav>
+  {% endif %}
+
+  {% if tags and not selected_month %}
+    <section class="mt-20 border-t border-neutral-200 pt-10" aria-labelledby="tags-heading">
+      <h2 id="tags-heading" class="eyebrow">Browse by tag</h2>
+      <ul class="mt-5 flex flex-wrap gap-2">
+        {% for t in tags %}
+          <li><a href="{{ t.get_absolute_url }}" class="inline-block border px-3 py-1.5 text-xs font-semibold transition {% if tag == t %}border-forest bg-forest text-white{% else %}border-neutral-300 text-neutral-700 hover:border-ink hover:text-ink{% endif %}">#{{ t.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

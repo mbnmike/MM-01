@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{% if category %}{{ category.name }}{% else %}All products{% endif %} — {{ brand.name }}{% endblock %}
+{% block meta_description %}{% if category and category.blurb %}{{ category.blurb }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="container-x pt-10 md:pt-16">
+  <p class="eyebrow">Collection</p>
+  <h1 class="h-display mt-2 text-5xl md:text-7xl">{% if category %}{{ category.name }}{% else %}All products{% endif %}</h1>
+  {% if category.blurb %}<p class="mt-3 max-w-xl text-neutral-600">{{ category.blurb }}</p>{% endif %}
+
+  <div class="mt-8 flex flex-col gap-4 border-y border-neutral-200 py-4 md:flex-row md:items-center md:justify-between">
+    <nav class="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0" aria-label="Categories">
+      <a href="{% url 'shop:collection_all' %}" class="shrink-0 border px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] {% if not category %}border-forest bg-forest text-white{% else %}border-neutral-300 hover:border-ink{% endif %}">All products</a>
+      {% for c in categories %}
+        <a href="{{ c.get_absolute_url }}" class="shrink-0 border px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] {% if category == c %}border-forest bg-forest text-white{% else %}border-neutral-300 hover:border-ink{% endif %}">{{ c.name }}</a>
+      {% endfor %}
+    </nav>
+    <form method="get" class="flex items-center gap-2">
+      <label for="sort" class="eyebrow">Sort</label>
+      <select id="sort" name="sort" data-autosubmit class="border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-ink focus:outline-none">
+        {% for key, label in sorts %}<option value="{{ key }}" {% if key == sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <noscript><button class="btn-outline px-3 py-2">Go</button></noscript>
+    </form>
+  </div>
+
+  <p class="mt-6 text-xs text-neutral-500">{{ products|length }} product{{ products|length|pluralize }}</p>
+  <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
+    {% for product in products %}
+      {% include "partials/product_card.html" %}
+    {% empty %}
+      <p class="col-span-full py-20 text-center text-neutral-500">Nothing here yet. Check back after the next drop.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

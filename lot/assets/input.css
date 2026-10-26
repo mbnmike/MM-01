@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  ::selection { background: #2c570e; color: #ffffff; }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold uppercase tracking-[0.2em] transition disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary { @apply btn bg-ink text-white hover:bg-forest; }
+  .btn-forest { @apply btn bg-forest text-white hover:bg-forest-dark; }
+  .btn-outline { @apply btn border border-ink text-ink hover:bg-ink hover:text-white; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.25em] text-neutral-500; }
+  .h-display { @apply font-display uppercase leading-[0.95] tracking-tight; }
+  .container-x { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .link-accent { @apply underline decoration-forest decoration-2 underline-offset-4; }
+
+  /* Blog article body (see blog/rendering.py) */
+  .post-body > :first-child { @apply mt-0; }
+  .post-body figure { @apply my-10 md:my-12; }
+  .post-body figure img { @apply m-0 w-full cursor-zoom-in bg-neutral-100; }
+  .post-body figcaption { @apply mt-3 font-sans text-sm leading-snug text-neutral-500; }
+  .post-body blockquote { @apply my-10 pl-6 text-[1.35em] leading-snug md:pl-8; }
+  .post-body blockquote p::before, .post-body blockquote p::after { content: none; }
+  .post-body .gallery { @apply my-10 grid grid-cols-2 gap-2 sm:gap-3 md:my-12; }
+  .post-body .gallery.cols-3 { @apply grid-cols-2 sm:grid-cols-3; }
+  .post-body .gallery figure { @apply m-0 flex flex-col; }
+  .post-body .gallery img { @apply aspect-[4/3] h-auto object-cover; }
+  .post-body .gallery figcaption { @apply mt-1.5 text-xs; }
+  .post-body > figure, .post-body > .gallery { @apply lg:-mx-20 xl:-mx-28; }
+  .post-body > figure > figcaption { @apply lg:px-20 xl:px-28; }
+  .post-body table { @apply font-sans text-base; }
+}

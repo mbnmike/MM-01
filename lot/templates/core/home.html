@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block header %}{% include "partials/header.html" with overlay=True %}{% endblock %}
+
+{% block content %}
+<section class="relative isolate flex h-[100svh] min-h-[560px] overflow-hidden bg-ink text-white">
+  <img src="{% static 'img/hero.jpg' %}?v={{ asset_version }}" alt="Lowered car on an empty road at dusk" class="absolute inset-0 -z-10 h-full w-full object-cover object-[center_40%]">
+  <div class="absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-black/60 to-transparent"></div>
+  <div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+  <div class="container-x mt-auto pb-14 md:pb-20">
+    {% if store_enabled %}
+      <p class="eyebrow text-white/80">New drop — out now</p>
+    {% else %}
+      <p class="eyebrow text-white/80">{{ journal.title }}</p>
+    {% endif %}
+    <h1 class="h-display mt-4 max-w-4xl text-5xl sm:text-7xl lg:text-8xl">Built for the<br>night shift.</h1>
+    {% if store_enabled %}
+      <p class="mt-5 max-w-md text-base text-white/80">Heavyweight apparel, car accessories, and stickers that outlast the paint.</p>
+      <a href="{% url 'shop:collection_all' %}" class="btn-forest mt-8 px-8 py-4 text-sm">Shop all products</a>
+    {% else %}
+      {% if journal.intro %}<p class="mt-5 max-w-md text-base text-white/80">{{ journal.intro }}</p>{% endif %}
+      <a href="{% url 'blog:list' %}" class="btn-forest mt-8 px-8 py-4 text-sm">Read the journal</a>
+    {% endif %}
+  </div>
+</section>
+
+{% if not store_enabled %}
+<section class="container-x py-16 md:py-24">
+  <div class="flex items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Latest</p>
+      <h2 class="h-display mt-2 text-3xl md:text-5xl">From the journal</h2>
+    </div>
+    {% if latest_posts %}<a href="{% url 'blog:list' %}" class="link-accent hidden text-xs font-bold uppercase tracking-[0.2em] sm:block">All posts</a>{% endif %}
+  </div>
+  {% if latest_posts %}
+    <div class="mt-10 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {% for post in latest_posts %}{% include "blog/_card.html" %}{% endfor %}
+    </div>
+    <a href="{% url 'blog:list' %}" class="btn-outline mt-12 sm:hidden">All posts</a>
+  {% else %}
+    <p class="mt-8 text-neutral-600">First post coming soon.</p>
+  {% endif %}
+</section>
+{% else %}
+
+<div class="overflow-hidden bg-forest py-3 text-white" aria-hidden="true">
+  <div class="flex w-max animate-marquee gap-10 whitespace-nowrap font-display text-sm uppercase tracking-wide">
+    {% for i in "12" %}
+      <span>Apparel</span><span>✦</span><span>Car accessories</span><span>✦</span><span>Accessories</span><span>✦</span><span>Stickers</span><span>✦</span><span>Small runs</span><span>✦</span><span>No restocks promised</span><span>✦</span>
+    {% endfor %}
+  </div>
+</div>
+
+<section class="container-x py-16 md:py-24">
+  <div class="flex items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Featured</p>
+      <h2 class="h-display mt-2 text-3xl md:text-5xl">This week's picks</h2>
+    </div>
+    <a href="{% url 'shop:collection_all' %}" class="link-accent hidden text-xs font-bold uppercase tracking-[0.2em] sm:block">View all</a>
+  </div>
+  <div class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
+    {% for product in featured %}
+      {% include "partials/product_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+
+{% if reviews %}
+<section class="bg-forest py-14 text-white">
+  <div class="container-x">
+    <p class="eyebrow text-white/70">What people say</p>
+    <div class="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      {% for review in reviews %}
+        <figure class="border-l-2 border-white/60 pl-5">
+          <p class="text-sm tracking-widest" aria-label="{{ review.rating }} out of 5 stars">{{ review.stars }}</p>
+          <blockquote class="mt-3 text-base font-medium leading-snug">“{{ review.body }}”</blockquote>
+          <figcaption class="mt-3 text-xs uppercase tracking-[0.2em] text-white/70">{{ review.author_name }}{% if review.location %} · {{ review.location }}{% endif %}</figcaption>
+        </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="container-x py-16 md:py-24">
+  <p class="eyebrow">Shop by section</p>
+  <div class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+    {% for c in categories %}
+      <a href="{{ c.get_absolute_url }}" class="group flex aspect-[4/3] flex-col justify-between border border-ink p-4 transition hover:border-forest hover:bg-forest hover:text-white md:p-6">
+        <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 group-hover:text-white/70">0{{ forloop.counter }}</span>
+        <span class="h-display text-xl md:text-3xl">{{ c.name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

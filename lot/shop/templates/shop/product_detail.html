@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}{{ product.name }} — {{ brand.name }}{% endblock %}
+{% block meta_description %}{{ product.tagline|default:product.description|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ product.name }}{% endblock %}
+{% block meta_extra %}{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}<meta property="og:type" content="product">{% endblock %}
+{% block schema %}<script type="application/ld+json">{{ schema_json }}</script>{% endblock %}
+
+{% block content %}
+<div class="container-x pt-6 md:pt-10">
+  <nav class="text-xs text-neutral-500" aria-label="Breadcrumb">
+    <a href="{% url 'shop:collection_all' %}" class="hover:text-ink">Shop</a> /
+    <a href="{{ product.category.get_absolute_url }}" class="hover:text-ink">{{ product.category.name }}</a> /
+    <span class="text-ink">{{ product.name }}</span>
+  </nav>
+
+  <div class="mt-6 grid gap-8 md:grid-cols-12 md:gap-12">
+    {# Gallery #}
+    <div class="md:col-span-7" data-gallery>
+      {% with images=product.gallery %}
+        <div class="relative aspect-[4/5] overflow-hidden bg-bone">
+          {% if images %}
+            <img src="{{ images.0.image.url }}" alt="{{ images.0.alt|default:product.name }}" data-gallery-main class="h-full w-full object-cover">
+          {% endif %}
+          {% if not product.in_stock %}
+            <span class="absolute left-4 top-4 bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em]">Sold out</span>
+          {% endif %}
+        </div>
+        {% if images|length > 1 %}
+          <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
+            {% for img in images %}
+              <button type="button" data-gallery-thumb data-src="{{ img.image.url }}" data-alt="{{ img.alt|default:product.name }}"
+                class="aspect-square overflow-hidden border-2 {% if forloop.first %}border-ink{% else %}border-transparent{% endif %} bg-bone hover:border-neutral-400"
+                aria-label="Show image {{ forloop.counter }}">
+                <img src="{{ img.image.url }}" alt="" class="h-full w-full object-cover" loading="lazy">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {# Buy box #}
+    <div class="md:col-span-5">
+      <div class="md:sticky md:top-24">
+        <p class="eyebrow">{{ product.category.name }}</p>
+        <h1 class="h-display mt-2 text-4xl md:text-5xl">{{ product.name }}</h1>
+        <p class="mt-4 text-2xl font-semibold tabular-nums">
+          {% if product.on_sale %}<span class="mr-2 text-lg text-neutral-400 line-through">{{ product.compare_at_price|money }}</span>{% endif %}
+          <span data-price>{{ selected.price|default:product.price|money }}</span>
+        </p>
+        {% if product.tagline %}<p class="mt-3 text-neutral-600">{{ product.tagline }}</p>{% endif %}
+
+        {% if product.in_stock %}
+          <form method="post" action="{% url 'shop:cart_add' %}" class="mt-8" data-variant-form>
+            {% csrf_token %}
+            <fieldset>
+              <legend class="eyebrow mb-3">{% if variants|length > 1 %}Select option{% else %}Option{% endif %}</legend>
+              <div class="flex flex-wrap gap-2">
+                {% for v in variants %}
+                  <label class="cursor-pointer">
+                    <input type="radio" name="variant" value="{{ v.pk }}" class="peer sr-only"
+                      data-stock="{{ v.stock }}" data-price="{{ v.price|money }}" data-low="{% if v.low_stock %}1{% endif %}"
+                      {% if v == selected %}checked{% endif %} {% if not v.in_stock %}disabled{% endif %} required>
+                    <span class="flex min-w-[3.25rem] items-center justify-center border border-neutral-300 px-4 py-3 text-sm font-semibold transition hover:border-ink peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-forest peer-disabled:cursor-not-allowed peer-disabled:border-neutral-200 peer-disabled:text-neutral-300 peer-disabled:line-through">
+                      {{ v.name }}
+                    </span>
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+
+            <p class="mt-4 flex items-center gap-2 text-sm" data-stock-status>
+              {% if selected.low_stock %}
+                <span class="h-2 w-2 rounded-full bg-amber-500"></span> Only {{ selected.stock }} left
+              {% else %}
+                <span class="h-2 w-2 rounded-full bg-emerald-500"></span> In stock, ships in 2–4 days
+              {% endif %}
+            </p>
+
+            <div class="mt-6 flex gap-3">
+              <label class="sr-only" for="qty">Quantity</label>
+              <input id="qty" type="number" name="quantity" value="1" min="1" max="{{ selected.stock }}" data-qty
+                class="w-20 border border-neutral-300 px-3 text-center text-sm font-semibold focus:border-ink focus:outline-none">
+              <button class="btn-primary flex-1 py-4 text-sm">Add to cart</button>
+            </div>
+          </form>
+        {% else %}
+          <div class="mt-8 border border-neutral-300 px-4 py-4 text-center text-sm font-bold uppercase tracking-[0.2em] text-neutral-500">
+            Sold out
+          </div>
+          <p class="mt-3 text-sm text-neutral-600">This one's gone for now. Small runs rarely come back.</p>
+        {% endif %}
+
+        {% if product.description %}
+          <div class="mt-10 border-t border-neutral-200 pt-6 text-sm leading-relaxed text-neutral-700">{{ product.description|linebreaks }}</div>
+        {% endif %}
+        {% if product.detail_lines %}
+          <ul class="mt-6 space-y-2 text-sm">
+            {% for line in product.detail_lines %}
+              <li class="flex gap-3"><span class="mt-2 h-1.5 w-1.5 shrink-0 bg-forest"></span>{{ line }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <details class="mt-6 border-t border-neutral-200 pt-4 text-sm">
+          <summary class="cursor-pointer font-bold uppercase tracking-[0.15em]">Shipping &amp; returns</summary>
+          <p class="mt-3 text-neutral-600">Ships in 2–4 business days. Unworn apparel can be returned within 30 days. <a href="{% url 'core:faq' %}" class="underline">More in the FAQ</a>.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+    <section class="mt-24">
+      <h2 class="h-display text-2xl md:text-4xl">You might also like</h2>
+      <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
+        {% for product in related %}{% include "partials/product_card.html" %}{% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

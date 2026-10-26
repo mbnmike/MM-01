@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container-x max-w-3xl pt-10 md:pt-16">
+  <p class="eyebrow">Help</p>
+  <h1 class="h-display mt-2 text-5xl md:text-7xl">FAQ</h1>
+  <div class="mt-10 divide-y divide-neutral-200 border-y border-neutral-200">
+    {% for q, a in faqs %}
+      <details class="group py-5" {% if forloop.first %}open{% endif %}>
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold [&::-webkit-details-marker]:hidden">
+          {{ q }}
+          <span class="text-xl transition group-open:rotate-45">+</span>
+        </summary>
+        <p class="mt-3 text-neutral-600">{{ a }}</p>
+      </details>
+    {% endfor %}
+  </div>
+  <p class="mt-10 text-sm text-neutral-600">Still stuck? <a href="{% url 'core:contact' %}" class="font-semibold text-ink underline">Get in touch</a>.</p>
+</div>
+{% endblock %}

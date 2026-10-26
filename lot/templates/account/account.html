@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}Your account — {{ brand.name }}{% endblock %}
+
+{% block content %}
+<div class="container-x pt-10 md:pt-16">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="eyebrow">Account</p>
+      <h1 class="h-display mt-2 text-5xl md:text-6xl">Hey, {{ user.first_name|default:user.username }}.</h1>
+    </div>
+    <form method="post" action="{% url 'core:logout' %}">{% csrf_token %}<button class="btn-outline">Log out</button></form>
+  </div>
+
+  <h2 class="h-display mt-14 text-2xl">Order history</h2>
+  {% if orders %}
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full min-w-[560px] text-left text-sm">
+        <thead class="border-b-2 border-ink text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+          <tr><th class="py-3 pr-4">Order</th><th class="py-3 pr-4">Date</th><th class="py-3 pr-4">Payment</th><th class="py-3 pr-4">Fulfillment</th><th class="py-3 text-right">Total</th></tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-200">
+          {% for order in orders %}
+            <tr>
+              <td class="py-4 pr-4"><a href="{% url 'core:account_order' order.number %}" class="link-accent font-bold">#{{ order.number }}</a></td>
+              <td class="py-4 pr-4 text-neutral-600">{{ order.created_at|date:"M j, Y" }}</td>
+              <td class="py-4 pr-4">{{ order.get_status_display }}</td>
+              <td class="py-4 pr-4">{% if order.is_paid %}{{ order.get_fulfillment_status_display }}{% else %}—{% endif %}</td>
+              <td class="py-4 text-right font-semibold tabular-nums">{{ order.total|money }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="mt-6 border border-dashed border-neutral-300 px-6 py-14 text-center">
+      <p class="font-semibold">No orders yet.</p>
+      <a href="{% url 'shop:collection_all' %}" class="btn-primary mt-6">Start shopping</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

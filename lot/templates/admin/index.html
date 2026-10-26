@@ -1,0 +1,7 @@
+{% extends "admin/index.html" %}
+{% load admin_dashboard %}
+
+{% block content %}
+{% store_dashboard %}
+{{ block.super }}
+{% endblock %}

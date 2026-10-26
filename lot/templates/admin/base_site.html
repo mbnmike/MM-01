@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}<meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="{% static 'css/admin.css' %}?v={{ asset_version }}">{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}" class="lot-brand">{{ brand.name }}<span>.</span> <small>admin</small></a>
+</div>
+{% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+
+{% block userlinks %}
+  <a href="/" target="_blank">View store ↗</a> /
+  {{ block.super }}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
