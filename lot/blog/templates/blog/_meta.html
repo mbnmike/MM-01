@@ -1,0 +1,11 @@
+<p class="flex flex-wrap items-center gap-x-2 gap-y-1 {{ meta_class|default:'text-[13px] text-neutral-500' }}">
+  <span>by <span class="font-semibold">{{ post.author_name }}</span></span>
+  {% if tags %}
+    <span class="opacity-50" aria-hidden="true">/</span>
+    <span>in {% for t in tags %}<a href="{{ t.get_absolute_url }}" class="hover:underline">{{ t.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+  {% endif %}
+  {% if post.published_at %}
+    <span class="opacity-50" aria-hidden="true">/</span>
+    <span>on <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"Y/m/d" }}</time></span>
+  {% endif %}
+</p>

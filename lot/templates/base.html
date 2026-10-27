@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ brand.description }}{% endblock %}">
-  <meta name="theme-color" content="#2c570e">
+  <meta name="theme-color" content="#0a0a0a">
   <meta property="og:site_name" content="{{ brand.name }}">
   <meta property="og:title" content="{% block og_title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}">
   <meta property="og:description" content="{% block og_description %}{{ brand.description }}{% endblock %}">
   {% block meta_extra %}{% endblock %}
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='6' y='22' width='20' height='4' fill='%232c570e'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><path d='M19 6h4l-10 20H9z' fill='%232c570e'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700{% block font_families %}{% endblock %}&display=swap" rel="stylesheet">
@@ -29,63 +29,35 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="mt-24 border-t-4 border-forest bg-ink text-white">
-    <div class="container-x grid gap-12 py-16 md:grid-cols-12">
-      <div class="md:col-span-4">
-        <p class="font-display text-4xl">{{ brand.name }}<span class="text-forest">.</span></p>
-        <p class="mt-3 max-w-xs text-sm text-neutral-400">{{ brand.description }}</p>
-      </div>
-      <div class="grid grid-cols-2 gap-8 text-sm md:col-span-8 md:grid-cols-3">
+  <footer class="mt-24 bg-ink text-white">
+    <div class="flex flex-col items-center gap-8 px-4 py-14 text-center sm:px-6 lg:px-10">
+      <a href="{% url 'core:home' %}" class="logo text-4xl md:text-5xl">{{ brand.name }}<span class="text-forest">/</span></a>
+      <p class="max-w-md text-sm text-neutral-400">{{ brand.description }}</p>
+      <nav class="flex flex-wrap justify-center gap-x-7 gap-y-3" aria-label="Footer">
+        <a class="nav-link" href="{% url 'core:home' %}">Home</a>
+        {% if store_enabled %}<a class="nav-link" href="{% url 'shop:collection_all' %}">Store</a>{% endif %}
+        <a class="nav-link" href="{% url 'blog:list' %}">Journal</a>
         {% if store_enabled %}
-        <div>
-          <p class="eyebrow">Shop</p>
-          <ul class="mt-4 space-y-2">
-            <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'shop:collection_all' %}">All products</a></li>
-            {% for c in nav_categories %}<li><a class="text-neutral-300 hover:text-white hover:underline" href="{{ c.get_absolute_url }}">{{ c.name }}</a></li>{% endfor %}
-          </ul>
-        </div>
+          <a class="nav-link" href="{% url 'core:faq' %}">FAQ</a>
+          {% if user.is_authenticated %}
+            <a class="nav-link" href="{% url 'core:account' %}">Order history</a>
+          {% else %}
+            <a class="nav-link" href="{% url 'core:login' %}">Log in</a>
+          {% endif %}
         {% endif %}
-        <div>
-          <p class="eyebrow">Info</p>
-          <ul class="mt-4 space-y-2">
-            {% if not store_enabled %}<li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:home' %}">Home</a></li>{% endif %}
-            <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'blog:list' %}">Journal</a></li>
-            {% if store_enabled %}<li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:faq' %}">FAQ</a></li>{% endif %}
-            <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:contact' %}">Contact</a></li>
-          </ul>
-        </div>
-        {% if store_enabled %}
-        <div>
-          <p class="eyebrow">Account</p>
-          <ul class="mt-4 space-y-2">
-            {% if user.is_authenticated %}
-              <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:account' %}">Order history</a></li>
-              <li>
-                <form method="post" action="{% url 'core:logout' %}">{% csrf_token %}
-                  <button class="text-neutral-300 hover:text-white hover:underline">Log out</button>
-                </form>
-              </li>
-            {% else %}
-              <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:login' %}">Log in</a></li>
-              <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'core:register' %}">Create account</a></li>
-            {% endif %}
-          </ul>
-        </div>
-        {% else %}
-        <div>
-          <p class="eyebrow">Follow</p>
-          <ul class="mt-4 space-y-2">
-            <li><a class="text-neutral-300 hover:text-white hover:underline" href="{% url 'blog:feed' %}">RSS feed</a></li>
-            <li><a class="text-neutral-300 hover:text-white hover:underline" href="mailto:{{ brand.email }}">{{ brand.email }}</a></li>
-          </ul>
-        </div>
-        {% endif %}
-      </div>
+        <a class="nav-link" href="{% url 'core:contact' %}">Contact</a>
+        <a class="nav-link" href="{% url 'blog:feed' %}">RSS</a>
+      </nav>
+      {% if store_enabled and user.is_authenticated %}
+        <form method="post" action="{% url 'core:logout' %}">{% csrf_token %}
+          <button class="text-xs text-neutral-500 hover:text-white hover:underline">Log out</button>
+        </form>
+      {% endif %}
     </div>
-    <div class="border-t border-neutral-800">
-      <div class="container-x flex flex-col gap-2 py-6 text-xs text-neutral-500 sm:flex-row sm:justify-between">
-        <p>&copy; {% now "Y" %} {{ brand.name }}. All rights reserved.</p>
-        {% if store_enabled %}<p>Payments secured by Stripe.</p>{% endif %}
+    <div class="border-t border-white/10">
+      <div class="flex flex-col items-center justify-between gap-2 px-4 py-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500 sm:flex-row sm:px-6 lg:px-10">
+        <p>{% now "Y" %} &copy; {{ brand.name }}</p>
+        {% if store_enabled %}<p>Payments secured by Stripe</p>{% else %}<a href="mailto:{{ brand.email }}" class="normal-case tracking-normal hover:text-white">{{ brand.email }}</a>{% endif %}
       </div>
     </div>
   </footer>

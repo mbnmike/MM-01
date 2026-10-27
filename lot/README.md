@@ -1,7 +1,7 @@
-# LOT — car & streetwear storefront (Django)
+# unnamed — car culture magazine + store (Django)
 
 One Django codebase: storefront, cart, Stripe Checkout, accounts, blog ("Journal"), and admin.
-Django templates + Tailwind CSS, no JavaScript framework. "LOT" is a placeholder brand name — set `BRAND_NAME` in `.env` to rename it.
+Django templates + Tailwind CSS, no JavaScript framework. "unnamed" is a placeholder brand name — set `BRAND_NAME` in `.env` to rename it.
 
 ## Quick start
 

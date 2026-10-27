@@ -83,7 +83,10 @@
 
   form.addEventListener("input", (e) => { if (e.target !== fileInput) markDirty(); });
   form.addEventListener("change", (e) => { if (e.target !== fileInput) markDirty(); });
-  if (window.django && window.django.jQuery) window.django.jQuery(form).on("change", "select", markDirty);
+  // Select2 fires synthetic jQuery "change" events while it initialises; only its user events mean an edit.
+  if (window.django && window.django.jQuery) {
+    window.django.jQuery(form).on("select2:select select2:unselect select2:clear", markDirty);
+  }
 
   form.addEventListener("submit", (e) => {
     const btn = e.submitter;

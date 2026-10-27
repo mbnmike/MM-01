@@ -183,8 +183,24 @@ class PageSmokeTests(TestCase):
         names = list(Category.objects.values_list("name", flat=True))
         self.assertEqual(names, ["Apparel", "Car Accessories", "Accessories", "Stickers"])
         html = self.client.get("/").content.decode()
-        self.assertIn("All products", html)
+        self.assertIn('href="/shop/" class="nav-link">Store</a>', html)
+        self.assertIn("Featured articles", html)
+        self.assertIn("From the store", html)
+        hero = Post.objects.published().filter(is_featured=True).first()
+        self.assertInHTML(f'<a href="{hero.get_absolute_url()}" class="hover:underline hover:decoration-forest '
+                          f'hover:decoration-[3px] hover:underline-offset-[10px]">{hero.title}</a>', html)
         self.assertNotIn("Notes from the garage", html)
+
+        from blog.models import BlogSettings
+        BlogSettings.objects.update_or_create(pk=1, defaults={"posts_per_page": 3})
+        html = self.client.get("/").content.decode()
+        self.assertIn('aria-label="Pagination"', html)
+        self.assertIn('href="?page=2"', html)
+        page2 = self.client.get("/?page=2").content.decode()
+        self.assertIn("Page 2", page2)
+        self.assertNotIn('aria-label="Featured post"', page2)
+        self.assertNotIn("From the store", page2)
+        self.assertIn('class="nav-link">Store</a>', page2)
         self.assertNotIn('name="email"', html)
 
     def test_store_switched_off(self):
@@ -206,7 +222,8 @@ class PageSmokeTests(TestCase):
                 self.assertNotIn('href="/faq/"', html)
                 self.assertNotIn("Shop the story", html)
         home = self.client.get("/").content.decode()
-        self.assertIn("From the journal", home)
+        self.assertIn("Featured articles", home)
+        self.assertNotIn("From the store", home)
         self.assertIn(Post.objects.published().first().title, home)
         self.assertNotIn('name="order_number"', self.client.get("/contact/").content.decode())
 

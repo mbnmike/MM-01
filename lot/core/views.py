@@ -3,16 +3,17 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from blog.models import BlogSettings, Post
-from shop.models import Category, Order, Product
+from shop.models import Order, Product
 
 from .admin_site import LOGIN_ATTEMPTS, LOGIN_WINDOW
 from .forms import ContactForm, LoginForm, RegisterForm
-from .models import ContactMessage, FeaturedProduct, Review, SiteSettings
+from .models import ContactMessage, FeaturedProduct, SiteSettings
 from .ratelimit import too_many
 
 FAQS = [
@@ -34,28 +35,21 @@ FAQS = [
 
 
 def home(request):
-    if not SiteSettings.load().store_enabled:
-        return render(request, "core/home.html", {
-            "journal": BlogSettings.load(),
-            "latest_posts": Post.objects.published().select_related("author")[:6],
-        })
-    featured = [
-        f.product
-        for f in FeaturedProduct.objects.select_related("product", "product__category")
-        .prefetch_related("product__images", "product__variants")
-        .filter(product__is_active=True)[:8]
-    ]
-    if not featured:
-        featured = list(Product.objects.for_listing()[:4])
-    return render(
-        request,
-        "core/home.html",
-        {
-            "featured": featured,
-            "reviews": Review.objects.filter(is_published=True)[:4],
-            "categories": Category.objects.all(),
-        },
-    )
+    posts = Post.objects.published().select_related("author").prefetch_related("tags")
+    hero_post = posts.filter(is_featured=True).first() or posts.first()
+    if hero_post:
+        posts = posts.exclude(pk=hero_post.pk)
+    page = Paginator(posts, BlogSettings.load().posts_per_page).get_page(request.GET.get("page"))
+    context = {"hero_post": hero_post, "page": page}
+    if page.number == 1 and SiteSettings.load().store_enabled:
+        featured = [
+            f.product
+            for f in FeaturedProduct.objects.select_related("product", "product__category")
+            .prefetch_related("product__images", "product__variants")
+            .filter(product__is_active=True)[:4]
+        ]
+        context["featured"] = featured or list(Product.objects.for_listing()[:4])
+    return render(request, "core/home.html", context)
 
 
 def faq(request):

@@ -1,0 +1,17 @@
+<article class="group">
+  <a href="{{ post.get_absolute_url }}" class="relative block aspect-[16/9] overflow-hidden bg-ink" tabindex="-1" aria-hidden="true">
+    {% if post.cover_image %}
+      <img src="{{ post.cover_image.url }}" alt="" loading="lazy" decoding="async"
+        {% if post.cover_width %}width="{{ post.cover_width }}" height="{{ post.cover_height }}"{% endif %}
+        {% if post.cover_thumb %}srcset="{{ post.cover_thumb.url }} 960w, {{ post.cover_image.url }} {{ post.cover_width|default:2400 }}w" sizes="(min-width: 1024px) 960px, 100vw"{% endif %}
+        class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]">
+    {% else %}
+      <span class="flex h-full w-full items-end bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_65%)] p-6 text-2xl font-semibold leading-tight text-white/90 md:p-10 md:text-4xl">{{ post.title|truncatewords:10 }}</span>
+    {% endif %}
+  </a>
+  <h3 class="mt-6 text-2xl font-semibold leading-tight tracking-[-0.02em] md:text-[2.1rem]">
+    <a href="{{ post.get_absolute_url }}" class="transition group-hover:text-forest">{{ post.title }}</a>
+  </h3>
+  <div class="mt-3">{% include "blog/_meta.html" with tags=post.tags.all meta_class="text-sm text-neutral-500" %}</div>
+  {% if post.excerpt %}<p class="mt-4 line-clamp-2 font-serif text-lg leading-relaxed text-neutral-600">{{ post.excerpt }}</p>{% endif %}
+</article>

@@ -165,7 +165,7 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "hello@lot.example")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "hello@unnamed.example")
 
 # Stripe — secret values are only ever read server-side.
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
@@ -177,10 +177,10 @@ CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL", "$")
 LOW_STOCK_THRESHOLD = int(os.environ.get("LOW_STOCK_THRESHOLD", "3"))
 
 BRAND = {
-    "name": os.environ.get("BRAND_NAME", "LOT"),
-    "tagline": "Car culture & streetwear",
-    "description": "Small-batch apparel, car goods, and stickers for people who drive at night.",
-    "email": os.environ.get("BRAND_EMAIL", "hello@lot.example"),
+    "name": os.environ.get("BRAND_NAME", "unnamed"),
+    "tagline": "Car culture & motorsport",
+    "description": "Builds, events, drives, and the people behind them.",
+    "email": os.environ.get("BRAND_EMAIL", "hello@unnamed.example"),
 }
 
 if not DEBUG:
