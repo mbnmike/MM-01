@@ -5,41 +5,27 @@
 {% block header %}{% if page.number == 1 %}{% include "partials/header.html" with overlay=True %}{% else %}{% include "partials/header.html" with overlay=False %}{% endif %}{% endblock %}
 
 {% block content %}
-{% if page.number == 1 %}{% include "blog/_hero.html" with heading="h1" %}{% endif %}
+{% if page.number == 1 %}{% include "core/_video_hero.html" %}{% endif %}
 
-<section class="px-4 sm:px-6 lg:px-10 {% if page.number == 1 %}pt-16 md:pt-24{% else %}pt-12 md:pt-16{% endif %}" aria-labelledby="articles-heading">
+<section id="articles" class="scroll-mt-20 focus:outline-none px-4 pt-12 sm:px-6 md:pt-16 lg:px-10" aria-labelledby="articles-heading">
   <div class="mx-auto max-w-4xl">
     {% if page.number == 1 %}
       <h2 id="articles-heading" class="section-title">Featured articles</h2>
     {% else %}
-      <h1 id="articles-heading" class="section-title">Featured articles <span class="text-neutral-400">· Page {{ page.number }}</span></h1>
+      <h1 id="articles-heading" class="section-title">Featured articles <span class="text-neutral-500">· Page {{ page.number }}</span></h1>
     {% endif %}
 
     {% if page.object_list %}
-      <div class="mt-12 divide-y divide-neutral-200">
+      <div class="mt-12 divide-y divide-white/10">
         {% for post in page %}
           <div class="{% if not forloop.first %}pt-14{% endif %} {% if not forloop.last %}pb-14{% endif %}">{% include "blog/_feature.html" %}</div>
         {% endfor %}
       </div>
-    {% elif not hero_post %}
+    {% else %}
       <p class="mt-10 text-center text-neutral-500">The first story is on its way.</p>
     {% endif %}
 
     {% include "partials/pagination.html" %}
   </div>
 </section>
-
-{% if featured %}
-<section class="mt-24 border-t border-neutral-200 px-4 pt-16 sm:px-6 lg:px-10" aria-labelledby="store-heading">
-  <div class="mx-auto max-w-7xl">
-    <div class="flex items-end justify-between gap-4">
-      <h2 id="store-heading" class="text-sm font-semibold uppercase tracking-[0.2em]">From the store</h2>
-      <a href="{% url 'shop:collection_all' %}" class="text-[13px] font-semibold uppercase tracking-[0.08em] hover:text-forest">Shop all →</a>
-    </div>
-    <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
-      {% for product in featured %}{% include "partials/product_card.html" %}{% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
 {% endblock %}

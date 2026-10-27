@@ -10,7 +10,7 @@ from django.utils.formats import date_format
 from django.utils.html import format_html
 
 from .forms import PostAdminForm
-from .models import BlogSettings, Comment, MediaAsset, Post, PostAutosave, Tag
+from .models import BlogSettings, Comment, MediaAsset, Post, PostAutosave, PostCategory, Tag
 from .rendering import PROSE_CLASSES, render_markdown
 from .views import post_context
 
@@ -31,6 +31,20 @@ def _badge(label, tone):
 class TagAdmin(admin.ModelAdmin):
     list_display = ("name", "slug", "post_count")
     prepopulated_fields = {"slug": ("name",)}
+    search_fields = ("name",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(n=Count("posts"))
+
+    @admin.display(description="Posts", ordering="n")
+    def post_count(self, obj):
+        return obj.n
+
+
+@admin.register(PostCategory)
+class PostCategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "position", "post_count")
+    list_editable = ("position",)
     search_fields = ("name",)
 
     def get_queryset(self, request):
@@ -63,21 +77,20 @@ class StatusFilter(admin.SimpleListFilter):
 class PostAdmin(admin.ModelAdmin):
     form = PostAdminForm
     change_form_template = "admin/blog/post/editor.html"
-    list_display = ("title", "state", "published_at", "updated_at", "comment_count", "links")
+    list_display = ("title", "category", "state", "published_at", "updated_at", "comment_count", "links")
     list_display_links = ("title",)
-    list_filter = (StatusFilter, "published_at", "tags", "is_featured")
+    list_filter = (StatusFilter, "category", "published_at", "tags", "is_featured")
     search_fields = ("title", "excerpt", "body", "slug")
     date_hierarchy = "published_at"
     ordering = ("-updated_at",)
-    autocomplete_fields = ("tags", "related_products")
+    autocomplete_fields = ("tags",)
     actions = ["publish", "unpublish"]
     list_per_page = 30
     fieldsets = (
-        (None, {"fields": ("title", "slug", "excerpt", "body")}),
+        (None, {"fields": ("category", "title", "slug", "excerpt", "body")}),
         ("Publishing", {"fields": ("published_at", "updated_on", "is_featured", "allow_comments", "author")}),
         ("Cover", {"fields": ("cover_image", "cover_alt", "cover_caption")}),
         ("Tags", {"fields": ("tags",)}),
-        ("Shop the story", {"fields": ("related_products",)}),
         ("SEO", {"fields": ("meta_description", "schema_type")}),
     )
 
@@ -86,7 +99,7 @@ class PostAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return (
             super().get_queryset(request)
-            .select_related("author")
+            .select_related("author", "category")
             .annotate(
                 n_comments=Count("comments", distinct=True),
                 n_pending=Count("comments", filter=Q(comments__status=Comment.Status.PENDING), distinct=True),
@@ -299,10 +312,7 @@ class PostAdmin(admin.ModelAdmin):
                 # A just-picked cover isn't stored until you save; preview with the saved one.
                 post.cover_image = Post.objects.get(pk=obj.pk).cover_image if obj else None
             post.slug = post.slug or "preview"
-            extra = {
-                "tags": list(form.cleaned_data.get("tags") or []),
-                "related_products": list(form.cleaned_data.get("related_products") or [])[:4],
-            }
+            extra = {"tags": list(form.cleaned_data.get("tags") or [])}
         elif obj is None:
             raise Http404
         else:
@@ -418,7 +428,7 @@ class CommentAdmin(admin.ModelAdmin):
 @admin.register(BlogSettings)
 class BlogSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
-        ("Blog homepage", {"fields": ("title", "intro", "posts_per_page")}),
+        ("Articles page", {"fields": ("title", "intro", "posts_per_page")}),
         ("Comments", {"fields": ("comments_enabled", "require_approval", "auto_approve_known",
                                  "notify_email", "blocked_words")}),
     )

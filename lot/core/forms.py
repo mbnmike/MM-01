@@ -1,9 +1,9 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
+
+from .models import Subscriber
 
 INPUT_CLASSES = (
-    "block w-full rounded-none border border-neutral-300 bg-white px-3 py-2.5 text-sm text-ink "
+    "field-input block w-full rounded-none border border-neutral-300 bg-white px-3 py-2.5 text-sm text-ink "
     "placeholder:text-neutral-400 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
 )
 
@@ -25,20 +25,7 @@ class ContactForm(StyledFormMixin, forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={"rows": 6}))
 
 
-class LoginForm(StyledFormMixin, AuthenticationForm):
-    pass
-
-
-class RegisterForm(StyledFormMixin, UserCreationForm):
-    email = forms.EmailField()
-    first_name = forms.CharField(label="Name", max_length=150, required=False)
-
-    class Meta(UserCreationForm.Meta):
-        model = User
-        fields = ("username", "first_name", "email")
-
-    def clean_email(self):
-        email = self.cleaned_data["email"].lower()
-        if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError("An account with this email already exists.")
-        return email
+class SubscribeForm(forms.Form):
+    email = forms.EmailField(max_length=254)
+    source = forms.ChoiceField(choices=Subscriber.Source.choices, required=False)
+    website = forms.CharField(required=False)  # honeypot: people never see it, bots fill it

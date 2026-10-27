@@ -165,7 +165,7 @@ class VisibilityTests(BlogFixtureMixin, TestCase):
 
     def test_public_pages_never_reveal_admin_url(self):
         admin_prefix = reverse("admin:index")
-        for url in ["/", "/blog/", self.live.get_absolute_url(), "/account/login/"]:
+        for url in ["/", "/blog/", self.live.get_absolute_url(), "/contact/"]:
             with self.subTest(url=url):
                 self.assertNotIn(admin_prefix, self.client.get(url).content.decode())
 
@@ -436,11 +436,6 @@ class AdminSecurityTests(TestCase):
         for _ in range(10):
             self.assertEqual(self.client.post(url, {"username": "x", "password": "wrong"}).status_code, 200)
         self.assertEqual(self.client.post(url, {"username": "x", "password": "wrong"}).status_code, 429)
-
-    def test_customer_login_is_throttled(self):
-        for _ in range(10):
-            self.client.post("/account/login/", {"username": "x", "password": "wrong"})
-        self.assertEqual(self.client.post("/account/login/", {"username": "x", "password": "wrong"}).status_code, 429)
 
     def test_customers_cannot_log_into_admin(self):
         User.objects.create_user("buyer", "b@example.com", "pw-123-secure")

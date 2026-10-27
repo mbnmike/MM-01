@@ -5,6 +5,8 @@
     <img src="{{ hero_post.cover_image.url }}" alt="{{ hero_post.cover_alt }}" fetchpriority="high" decoding="async"
       {% if hero_post.cover_width %}width="{{ hero_post.cover_width }}" height="{{ hero_post.cover_height }}"{% endif %}
       class="absolute inset-0 -z-10 h-full w-full object-cover">
+  {% elif hero_post %}
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_65%)]"></div>
   {% else %}
     <img src="{% static 'img/hero.jpg' %}?v={{ asset_version }}" alt="" fetchpriority="high" class="absolute inset-0 -z-10 h-full w-full object-cover object-[center_40%]">
   {% endif %}
@@ -15,9 +17,9 @@
     <div class="mx-auto max-w-5xl">
       {% if hero_post %}
         {% if heading == "h1" %}
-          <h1 class="h-display max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]"><a href="{{ hero_post.get_absolute_url }}" class="hover:underline hover:decoration-forest hover:decoration-[3px] hover:underline-offset-[10px]">{{ hero_post.title }}</a></h1>
+          <h1 class="h-display max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]"><a href="{{ hero_post.get_absolute_url }}" class="hover:underline hover:decoration-forest hover:decoration-[3px] hover:underline-offset-[10px]">{{ hero_post.display_title }}</a></h1>
         {% else %}
-          <h2 class="h-display max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]"><a href="{{ hero_post.get_absolute_url }}" class="hover:underline hover:decoration-forest hover:decoration-[3px] hover:underline-offset-[10px]">{{ hero_post.title }}</a></h2>
+          <h2 class="h-display max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]"><a href="{{ hero_post.get_absolute_url }}" class="hover:underline hover:decoration-forest hover:decoration-[3px] hover:underline-offset-[10px]">{{ hero_post.display_title }}</a></h2>
         {% endif %}
         <div class="mt-5">{% include "blog/_meta.html" with post=hero_post tags=hero_post.tags.all meta_class="text-sm text-white/85" %}</div>
       {% else %}

@@ -268,8 +268,32 @@ DRAWERS = {
 }
 
 
+def print_image(colors, brand, code, view="front", extra=None):
+    """A photo print on white paper, tilted with a soft shadow. extra = {"seed", "portrait", "angle"}."""
+    opts = extra if isinstance(extra, dict) else {}
+    portrait, angle = opts.get("portrait", False), opts.get("angle", -4)
+    sheet_w, sheet_h = (760, 1060) if portrait else (1040, 740)
+    margin, foot = 46, 70
+    photo = road_scene(sheet_w - 2 * margin, sheet_h - 2 * margin - foot, glow=colors[1], tail=colors[2],
+                       brand=brand, seed=opts.get("seed", 1))
+    sheet = Image.new("RGBA", (sheet_w, sheet_h), "#fbfbf8")
+    sheet.paste(photo, (margin, margin))
+    d = ImageDraw.Draw(sheet)
+    d.text((margin, sheet_h - margin - 8), brand, font=font(22), fill="#9a9a94", anchor="ls")
+    d.text((sheet_w - margin, sheet_h - margin - 8), f"No. {code}", font=font(20), fill="#9a9a94", anchor="rs")
+
+    img = Image.new("RGBA", (W, H), "#ffffff")
+    layer = sheet.rotate(angle, expand=True, resample=Image.BICUBIC)
+    paste_with_shadow(img, layer, ((W - layer.width) // 2, (H - layer.height) // 2), blur=22, offset=(10, 26), opacity=70)
+    if view == "detail":
+        img = img.crop((W * 0.12, H * 0.22, W * 0.88, H * 0.22 + W * 0.76 * H / W)).resize((W, H), Image.LANCZOS)
+    return to_jpeg(img)
+
+
 def product_image(kind, colors, brand, code, view="front", extra=None):
     """colors = (background, body, print/ink, accent). view = front | back | detail."""
+    if kind == "print":
+        return print_image(colors, brand, code, view, extra)
     base_view = "front" if view == "detail" else view
     img = _canvas(colors[0], brand, code, base_view)
     DRAWERS[kind](img, colors, brand, base_view, extra)

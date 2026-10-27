@@ -11,7 +11,6 @@ from django.utils.text import slugify
 
 from blog.models import MediaAsset, Post, Tag
 from core import placeholder_art as art
-from core.models import FeaturedProduct, Review
 from shop.models import Category, Product, ProductImage, ShippingMethod, Variant
 
 INK, BONE, FOREST = art.INK, art.BONE, art.FOREST
@@ -19,6 +18,7 @@ INK, BONE, FOREST = art.INK, art.BONE, art.FOREST
 ART_VERSION = "forest"
 
 CATEGORIES = [
+    ("prints", "Prints", "Large-format photographic prints on archival cotton rag. Printed to order, shipped rolled."),
     ("apparel", "Apparel", "Heavyweight tees and hoodies. Boxy fits, small runs."),
     ("car-accessories", "Car Accessories", "Plate frames, fresheners, and garage-tested parts for the daily and the weekend car."),
     ("accessories", "Accessories", "Caps, keychains, and the small stuff you carry every day."),
@@ -35,7 +35,7 @@ SHIPPING = [
 PRODUCTS = [
     {
         "slug": "night-shift-tee", "name": "Night Shift Tee", "category": "apparel", "price": "38.00",
-        "kind": "tee", "featured": 1,
+        "kind": "tee",
         "tagline": "7 oz heavyweight cotton. Boxy, slightly cropped.",
         "description": "Our everyday tee, built heavy so it holds its shape after a hundred washes. "
                        "Small chest hit up front, full back print behind.",
@@ -45,7 +45,7 @@ PRODUCTS = [
     },
     {
         "slug": "garage-hours-hoodie", "name": "Garage Hours Hoodie", "category": "apparel", "price": "88.00",
-        "kind": "hoodie", "featured": 2,
+        "kind": "hoodie",
         "tagline": "14 oz fleece. Double-lined hood. Built for cold garages.",
         "description": "A thick, warm hoodie with a roomy fit and ribbed cuffs that stay put. "
                        "Oversized back print, tonal drawcords.",
@@ -55,7 +55,7 @@ PRODUCTS = [
     },
     {
         "slug": "apex-6-panel-cap", "name": "Apex 6-Panel Cap", "category": "accessories", "price": "34.00",
-        "compare_at_price": "40.00", "kind": "cap", "featured": 3,
+        "compare_at_price": "40.00", "kind": "cap",
         "tagline": "Unstructured cotton twill with a curved brim.",
         "description": "Low-profile six-panel cap with an embroidered front and an adjustable strap.",
         "details": "Cotton twill\nEmbroidered front\nAdjustable strap with metal buckle\nOne size fits most",
@@ -64,7 +64,7 @@ PRODUCTS = [
     },
     {
         "slug": "low-and-slow-plate-frame", "name": "Low & Slow Plate Frame", "category": "car-accessories",
-        "price": "29.00", "kind": "plate", "featured": 4,
+        "price": "29.00", "kind": "plate",
         "tagline": "Slim ABS frame for standard US plates.",
         "description": "A slim frame that doesn't cover your registration stickers. Hardware included.",
         "details": "UV-stable ABS\nFits standard US 12 × 6 in. plates\nStainless hardware included\nCheck local laws before installing",
@@ -73,7 +73,7 @@ PRODUCTS = [
     },
     {
         "slug": "pit-lane-air-freshener", "name": "Pit Lane Air Freshener", "category": "car-accessories",
-        "price": "8.00", "kind": "freshener", "featured": 5,
+        "price": "8.00", "kind": "freshener",
         "tagline": "Hangs from the mirror. Lasts about 30 days.",
         "description": "A die-cut paper freshener in three scents we actually like. Strong for a week, then steady.",
         "details": "Lasts 30–40 days\nDie-cut fiberboard\nElastic hanging cord",
@@ -91,7 +91,7 @@ PRODUCTS = [
     },
     {
         "slug": "drive-at-night-sticker", "name": "Drive At Night Sticker", "category": "stickers", "price": "5.00",
-        "kind": "diecut", "featured": 6,
+        "kind": "diecut",
         "tagline": "Die-cut vinyl with a UV laminate.",
         "description": "Our core logo sticker. Thick white border, outdoor-rated, safe for paint and glass.",
         "details": "Outdoor-rated vinyl\nUV and scratch-resistant laminate\nDishwasher safe (for your bottle, not your car)",
@@ -109,12 +109,50 @@ PRODUCTS = [
     },
 ]
 
-REVIEWS = [
-    ("Kenji M.", "Osaka", "Heaviest tee I own. Washed it twenty times and it still looks new.", 5),
-    ("Dani R.", "Los Angeles", "The plate frame is so clean. It doesn't cover my tags and looks factory.", 5),
-    ("Theo B.", "Melbourne", "Ordered on Monday, wearing the hoodie at Friday's meet.", 5),
-    ("Sam K.", "Toronto", "The stickers survived a winter on my bumper. That's the review.", 4),
+PRINT_DETAILS = (
+    "Giclée print on 310 gsm archival cotton rag\n"
+    "Pigment inks rated for 100+ years indoors\n"
+    "White border for framing; ships unframed\n"
+    "Printed to order and shipped rolled in a tube"
+)
+PRINT_SIZES = [("12 × 18 in.", 25), ("18 × 24 in.", 15, "75.00"), ("24 × 36 in.", 8, "120.00")]
+
+# (colors) for prints = (unused, horizon glow, tail lights, unused); the third image item sets the scene.
+PRINTS = [
+    {
+        "slug": "coast-road-at-dusk-print", "name": "Coast Road at Dusk — Fine Art Print", "category": "prints",
+        "price": "45.00", "kind": "print",
+        "tagline": "The last light on the coast road, printed large.",
+        "description": "From the six-hundred-mile coast trip: the car pulled over above the water as the sun went down. "
+                       "Shot on location and printed by hand from the full-resolution file.",
+        "details": PRINT_DETAILS,
+        "images": [("front", (BONE, "#c9772e", BONE, INK), {"seed": 11, "angle": -4}),
+                   ("detail", (BONE, "#c9772e", BONE, INK), {"seed": 11, "angle": -4})],
+        "variants": PRINT_SIZES,
+    },
+    {
+        "slug": "night-meet-level-3-print", "name": "Night Meet, Level 3 — Fine Art Print", "category": "prints",
+        "price": "45.00", "kind": "print",
+        "tagline": "Sodium lights and clean builds on the top deck.",
+        "description": "A long exposure from the third level of the parking structure, an hour after the meet started. "
+                       "Deep blacks and green glow, made for a big wall.",
+        "details": PRINT_DETAILS,
+        "images": [("front", (BONE, "#4c8a1f", "#f4f4f0", INK), {"seed": 23, "angle": 3}),
+                   ("detail", (BONE, "#4c8a1f", "#f4f4f0", INK), {"seed": 23, "angle": 3})],
+        "variants": PRINT_SIZES,
+    },
+    {
+        "slug": "tunnel-run-print", "name": "Tunnel Run — Fine Art Print (Portrait)", "category": "prints",
+        "price": "45.00", "kind": "print",
+        "tagline": "Tail lights through the mountain tunnel. Portrait format.",
+        "description": "Shot from the passenger seat on the way up the mountain. Printed in portrait for narrow walls and hallways.",
+        "details": PRINT_DETAILS,
+        "images": [("front", (BONE, "#f4f4f0", "#e0412b", INK), {"seed": 37, "portrait": True, "angle": -3}),
+                   ("detail", (BONE, "#f4f4f0", "#e0412b", INK), {"seed": 37, "portrait": True, "angle": -3})],
+        "variants": PRINT_SIZES,
+    },
 ]
+PRODUCTS += PRINTS
 
 # Car-ownership journal entries, written in Markdown. {photo:N} becomes an uploaded media-library image.
 JOURNAL_POSTS = [
@@ -124,7 +162,6 @@ JOURNAL_POSTS = [
         "excerpt": "Three hundred miles, one cash envelope, and a coupe that had been sitting under a cover for two years.",
         "tags": ["Ownership", "Project Car"],
         "days_ago": 76,
-        "cover": ("#f4f4f0", "#4c8a1f", 11),
         "photos": [("#b45309", "#f4f4f0", 12)],
         "body": """I'd been watching the listing for three weeks. Low miles, original paint, one owner who'd parked it when he moved overseas. By the time I called, I'd already decided.
 
@@ -154,7 +191,6 @@ More soon. She's home.""",
         "excerpt": "Lowering the car took one weekend. Getting it to drive right took three more.",
         "tags": ["Suspension", "Project Car", "DIY"],
         "days_ago": 45,
-        "cover": ("#4c8a1f", "#f4f4f0", 21),
         "photos": [("#4c8a1f", "#f4f4f0", 22), ("#f4f4f0", "#4c8a1f", 23), ("#3b5b7a", "#f4f4f0", 24)],
         "body": """The coilovers arrived on a Thursday. By Sunday night the car was sitting where I wanted it, and it drove terribly.
 
@@ -180,7 +216,6 @@ It drives the way I wanted now: flat, quiet, and still comfortable enough for th
         "excerpt": "Not glamorous, but it's the work that keeps the car on the road. Here's the full list and what it cost.",
         "tags": ["Maintenance", "DIY"],
         "days_ago": 9,
-        "cover": ("#3b5b7a", "#f4f4f0", 31),
         "photos": [],
         "body": """With the suspension sorted, it was time for the boring-but-important stuff. I did most of it in the driveway over two Saturdays.
 
@@ -209,7 +244,6 @@ Total for the service: about **$440**, roughly a third of what the dealer quoted
         "tags": ["Road Trip", "Ownership"],
         "days_ago": 2,
         "featured": True,
-        "cover": ("#b45309", "#f4f4f0", 41),
         "photos": [("#b45309", "#f4f4f0", 42), ("#f4f4f0", "#b45309", 43), ("#4c8a1f", "#f4f4f0", 44), ("#3b5b7a", "#f4f4f0", 45)],
         "body": """Every change on this car was made with a trip like this in mind. So we packed light, left early, and pointed it north.
 
@@ -238,7 +272,6 @@ POSTS = [
         "excerpt": "Three things the best cars at last month's meet had in common — and none of them cost much.",
         "meta": "What separates a clean build from a busy one, from a night spent walking a parking-lot car meet.",
         "tags": ["Culture", "Builds"],
-        "products": ["low-and-slow-plate-frame", "drive-at-night-sticker", "night-shift-tee"],
         "days_ago": 12,
         "body": """<p>We spent last Saturday walking a parking lot full of cars until 2 a.m. The ones people kept coming back to weren't always the loudest or the most expensive. They were the cleanest.</p>
 <h2>1. One idea, executed fully</h2>
@@ -256,7 +289,6 @@ POSTS = [
         "excerpt": "From blank to finished tee — why we went heavy on cotton and printed by hand.",
         "meta": "A look at how the Night Shift Tee is made: 7 oz cotton, hand screen printing, and a boxy fit.",
         "tags": ["Apparel", "Process"],
-        "products": ["night-shift-tee", "garage-hours-hoodie", "apex-6-panel-cap"],
         "days_ago": 4,
         "body": """<p>We tested eleven blanks before settling on the one we use now. Most were too thin, twisted after a wash, or fit like a dress shirt.</p>
 <h2>Why 7 oz</h2>
@@ -270,7 +302,7 @@ POSTS = [
 
 
 class Command(BaseCommand):
-    help = "Load demo catalog, blog posts, reviews, and placeholder images."
+    help = "Load demo catalog, blog posts, and placeholder images."
 
     def add_arguments(self, parser):
         parser.add_argument("--reset", action="store_true", help="Delete existing catalog and blog data first.")
@@ -288,8 +320,6 @@ class Command(BaseCommand):
             Post.objects.all().delete()
             Tag.objects.all().delete()
             MediaAsset.objects.all().delete()
-            FeaturedProduct.objects.all().delete()
-            Review.objects.all().delete()
             Product.objects.all().delete()
             Category.objects.all().delete()
             ShippingMethod.objects.all().delete()
@@ -305,7 +335,6 @@ class Command(BaseCommand):
                 name=name, defaults={"description": desc, "price": Decimal(price), "position": i}
             )
 
-        products = {}
         for n, spec in enumerate(PRODUCTS, start=1):
             product, created = Product.objects.update_or_create(
                 slug=spec["slug"],
@@ -320,7 +349,6 @@ class Command(BaseCommand):
                     "is_active": True,
                 },
             )
-            products[spec["slug"]] = product
             for pos, variant in enumerate(spec["variants"]):
                 name, stock = variant[0], variant[1]
                 override = Decimal(variant[2]) if len(variant) > 2 else None
@@ -335,16 +363,10 @@ class Command(BaseCommand):
                     view, colors = image_spec[0], image_spec[1]
                     extra = image_spec[2] if len(image_spec) > 2 else None
                     data = art.product_image(spec["kind"], colors, brand, f"{n:03d}", view, extra)
-                    img = ProductImage(product=product, position=pos, alt=f"{spec['name']} — {extra or view}")
+                    label = extra if isinstance(extra, str) else view
+                    img = ProductImage(product=product, position=pos, alt=f"{spec['name']} — {label}")
                     img.image.save(f"{spec['slug']}-{pos + 1}-{ART_VERSION}.jpg", ContentFile(data), save=True)
-            if spec.get("featured"):
-                FeaturedProduct.objects.update_or_create(product=product, defaults={"position": spec["featured"]})
             self.stdout.write(f"  {'+' if created else '·'} {product.name}")
-
-        for i, (name, loc, body, rating) in enumerate(REVIEWS):
-            Review.objects.get_or_create(
-                author_name=name, defaults={"location": loc, "body": body, "rating": rating, "position": i}
-            )
 
         author, author_created = User.objects.get_or_create(
             username="lotcrew", defaults={"first_name": "Mika", "last_name": "Arai", "email": "crew@lot.example"}
@@ -369,7 +391,6 @@ class Command(BaseCommand):
                 slug=spec["slug"], title=spec["title"], excerpt=spec["excerpt"], body=body, author=author,
                 status=Post.Status.PUBLISHED, is_featured=spec.get("featured", False),
                 published_at=timezone.now() - timedelta(days=spec["days_ago"]),
-                cover_image=self._photo(*spec["cover"], brand), cover_alt=spec["title"],
             )
             post.save()
             post.tags.set(
@@ -377,7 +398,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"  + Post: {post.title}")
 
-        for i, spec in enumerate(POSTS):
+        for spec in POSTS:
             post, created = Post.objects.update_or_create(
                 slug=spec["slug"],
                 defaults={
@@ -393,11 +414,6 @@ class Command(BaseCommand):
             post.tags.set(
                 [Tag.objects.get_or_create(slug=t.lower(), defaults={"name": t})[0] for t in spec["tags"]]
             )
-            post.related_products.set([products[s] for s in spec["products"]])
-            if not post.cover_image:
-                post.cover_image.save(
-                    f"{spec['slug']}-{ART_VERSION}.jpg", ContentFile(art.cover_image(i, brand)), save=True
-                )
             self.stdout.write(f"  {'+' if created else '·'} Post: {post.title}")
 
         if opts["admin"]:

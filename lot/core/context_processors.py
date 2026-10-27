@@ -5,7 +5,8 @@ from django.conf import settings
 from shop.cart import Cart
 from shop.models import Category
 
-from .models import SiteSettings
+from .middleware import is_store_page
+from .models import SiteSettings, Subscriber
 
 
 def _asset_version():
@@ -26,8 +27,12 @@ def storefront(request):
         "brand": settings.BRAND,
         "asset_version": _asset_version(),
         "store_enabled": SiteSettings.load().store_enabled,
+        "in_store": request.resolver_match is not None and is_store_page(request.resolver_match),
+        "subscribed": request.session.get("subscribed", False),
     }
-    if context["store_enabled"]:
+    if not context["in_store"]:
+        context["subscriber_count"] = Subscriber.objects.filter(is_active=True).count()
+    if context["store_enabled"] and context["in_store"]:
         context.update(
             cart_count=Cart(request).count,
             nav_categories=Category.objects.all(),

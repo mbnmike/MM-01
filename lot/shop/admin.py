@@ -197,7 +197,6 @@ class OrderAdmin(admin.ModelAdmin):
     actions = ["mark_packing", "mark_shipped", "mark_delivered"]
     readonly_fields = (
         "number",
-        "user",
         "status",
         "subtotal",
         "shipping_name",
@@ -212,7 +211,7 @@ class OrderAdmin(admin.ModelAdmin):
         "updated_at",
     )
     fieldsets = (
-        ("Order", {"fields": ("number", "status", "paid_at", "created_at", "updated_at", "user")}),
+        ("Order", {"fields": ("number", "status", "paid_at", "created_at", "updated_at")}),
         ("Fulfillment", {"fields": ("fulfillment_status", "tracking_number", "internal_notes")}),
         (
             "Customer & shipping address",

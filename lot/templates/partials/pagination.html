@@ -1,23 +1,23 @@
-{# Needs `page` (a Paginator page). Keeps `query` (search text) in the links when set. #}
+{# Needs `page` (a Paginator page). Keeps `query` (search text) in the links when set. Blog side (dark). #}
 {% if page.has_other_pages %}
-  <nav class="mt-16 flex items-center justify-between border-t border-neutral-200 pt-6 text-xs font-bold uppercase tracking-[0.18em]" aria-label="Pagination">
+  <nav class="mt-16 flex items-center justify-between border-t border-white/10 pt-6 text-xs font-bold uppercase tracking-[0.18em]" aria-label="Pagination">
     {% if page.has_previous %}
-      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}" class="hover:text-forest">← Newer</a>
-    {% else %}<span class="text-neutral-300">← Newer</span>{% endif %}
+      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}" class="hover:text-forest-light">← Newer</a>
+    {% else %}<span class="text-neutral-700">← Newer</span>{% endif %}
     <ol class="hidden items-center gap-1 sm:flex">
       {% for n in page.paginator.page_range %}
         {% if n == page.number %}
-          <li><span class="flex h-9 w-9 items-center justify-center bg-ink text-white" aria-current="page">{{ n }}</span></li>
+          <li><span class="flex h-9 w-9 items-center justify-center bg-forest text-white" aria-current="page">{{ n }}</span></li>
         {% elif n == 1 or n == page.paginator.num_pages or n|add:"-2" <= page.number and n|add:"2" >= page.number %}
-          <li><a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ n }}" class="flex h-9 w-9 items-center justify-center hover:bg-neutral-100">{{ n }}</a></li>
+          <li><a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ n }}" class="flex h-9 w-9 items-center justify-center text-neutral-300 hover:bg-white/10 hover:text-white">{{ n }}</a></li>
         {% elif n == 2 or n == page.paginator.num_pages|add:"-1" %}
-          <li class="px-1 text-neutral-400">…</li>
+          <li class="px-1 text-neutral-600">…</li>
         {% endif %}
       {% endfor %}
     </ol>
     <span class="text-neutral-500 sm:hidden">{{ page.number }} / {{ page.paginator.num_pages }}</span>
     {% if page.has_next %}
-      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}" class="hover:text-forest">Older →</a>
-    {% else %}<span class="text-neutral-300">Older →</span>{% endif %}
+      <a href="?{% if query %}q={{ query|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}" class="hover:text-forest-light">Older →</a>
+    {% else %}<span class="text-neutral-700">Older →</span>{% endif %}
   </nav>
 {% endif %}

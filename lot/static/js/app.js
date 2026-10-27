@@ -159,6 +159,96 @@
     });
   }
 
+  // Store rows: arrow buttons scroll the strip; each hides at its end (both hide when everything fits).
+  document.querySelectorAll("[data-carousel]").forEach(function (row) {
+    var track = row.querySelector("[data-carousel-track]");
+    var prev = row.querySelector("[data-carousel-prev]");
+    var next = row.querySelector("[data-carousel-next]");
+    if (!track || !prev || !next) return;
+    var sync = function () {
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    };
+    var step = function (dir) { track.scrollBy({ left: dir * track.clientWidth * 0.85, behavior: "smooth" }); };
+    prev.addEventListener("click", function () { step(-1); });
+    next.addEventListener("click", function () { step(1); });
+    track.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    sync();
+  });
+
+  // Eased scroll to an on-page section (home "scroll down" arrow). Stops if the visitor scrolls themselves.
+  document.querySelectorAll("a[data-smooth-scroll]").forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      var target = document.querySelector(link.getAttribute("href"));
+      if (!target) return;
+      e.preventDefault();
+      var offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+      var start = window.scrollY;
+      var end = Math.max(0, target.getBoundingClientRect().top + start - offset);
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var finish = function () {
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+      };
+      if (reduce) { window.scrollTo(0, end); finish(); return; }
+
+      var duration = Math.min(1200, Math.max(600, Math.abs(end - start) * 0.9));
+      var ease = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+      var began = null;
+      var cancelled = false;
+      var cancel = function () { cancelled = true; };
+      window.addEventListener("wheel", cancel, { passive: true, once: true });
+      window.addEventListener("touchstart", cancel, { passive: true, once: true });
+      var step = function (now) {
+        if (cancelled) return;
+        if (began === null) began = now;
+        var t = Math.min(1, (now - began) / duration);
+        window.scrollTo(0, start + (end - start) * ease(t));
+        if (t < 1) { requestAnimationFrame(step); } else {
+          window.removeEventListener("wheel", cancel);
+          window.removeEventListener("touchstart", cancel);
+          finish();
+        }
+      };
+      requestAnimationFrame(step);
+    });
+  });
+
+  // Home video: pause/play button. Visitors who ask for reduced motion get the still image until they press play.
+  var heroVideo = document.querySelector("[data-hero-video]");
+  var heroToggle = document.querySelector("[data-hero-toggle]");
+  if (heroVideo && heroToggle) {
+    var syncToggle = function () {
+      var paused = heroVideo.paused;
+      heroToggle.setAttribute("aria-pressed", paused ? "true" : "false");
+      heroToggle.setAttribute("aria-label", paused ? "Play video" : "Pause video");
+      heroToggle.querySelector("[data-icon-pause]").classList.toggle("hidden", paused);
+      heroToggle.querySelector("[data-icon-play]").classList.toggle("hidden", !paused);
+    };
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      heroVideo.removeAttribute("autoplay");
+      heroVideo.pause();
+    }
+    heroToggle.addEventListener("click", function () {
+      if (heroVideo.paused) { heroVideo.play(); } else { heroVideo.pause(); }
+    });
+    heroVideo.addEventListener("play", syncToggle);
+    heroVideo.addEventListener("pause", syncToggle);
+    syncToggle();
+  }
+
+  // Sticky subscribe button: focus the email field on open; close with ×, Escape, or a click elsewhere.
+  var popup = document.querySelector("[data-subscribe-popup]");
+  if (popup) {
+    popup.addEventListener("toggle", function () {
+      if (popup.open) popup.querySelector('input[type="email"]').focus();
+    });
+    popup.querySelector("[data-subscribe-close]").addEventListener("click", function () { popup.open = false; });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") popup.open = false; });
+    document.addEventListener("click", function (e) { if (popup.open && !popup.contains(e.target)) popup.open = false; });
+  }
+
   // Transparent header over the home hero turns solid once scrolled or when the menu opens.
   var overlayHeader = document.querySelector("[data-header][data-overlay]");
   if (overlayHeader) {

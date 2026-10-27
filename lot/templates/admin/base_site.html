@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block userlinks %}
-  <a href="/" target="_blank">View store ↗</a> /
+  <a href="{% url 'shop:collection_all' %}" target="_blank" rel="noopener">View store ↗</a> /
   {{ block.super }}
 {% endblock %}
 

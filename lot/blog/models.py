@@ -38,6 +38,21 @@ class Tag(models.Model):
         return reverse("blog:tag", args=[self.slug])
 
 
+class PostCategory(models.Model):
+    """Shown before a post's title, e.g. "Feature: …", "Local: …", "Event: …"."""
+
+    name = models.CharField(max_length=30, unique=True)
+    position = models.PositiveIntegerField(default=0, help_text="Order in the post editor's dropdown.")
+
+    class Meta:
+        ordering = ["position", "name"]
+        verbose_name = "post category"
+        verbose_name_plural = "post categories"
+
+    def __str__(self):
+        return self.name
+
+
 class PostQuerySet(models.QuerySet):
     def published(self):
         return self.filter(status=Post.Status.PUBLISHED, published_at__lte=timezone.now())
@@ -53,6 +68,10 @@ class Post(models.Model):
         ARTICLE = "Article", "Article"
         NEWS = "NewsArticle", "News"
 
+    category = models.ForeignKey(
+        PostCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name="posts",
+        help_text="Shown before the title, e.g. “Feature: Night meet”. Leave empty for just the title.",
+    )
     title = models.CharField(max_length=160)
     slug = models.SlugField(
         unique=True, max_length=180, blank=True,
@@ -73,9 +92,6 @@ class Post(models.Model):
     )
     cover_caption = models.CharField(max_length=200, blank=True, help_text="Optional caption under the cover.")
     tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
-    related_products = models.ManyToManyField(
-        "shop.Product", blank=True, related_name="posts", help_text="Shown in the 'Shop the story' block."
-    )
     meta_description = models.CharField(
         max_length=160, blank=True, help_text="For search results. Falls back to the excerpt."
     )
@@ -103,6 +119,10 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def display_title(self):
+        return f"{self.category.name}: {self.title}" if self.category_id else self.title
 
     def get_absolute_url(self):
         return reverse("blog:post", args=[self.slug])
@@ -242,7 +262,7 @@ class Comment(models.Model):
 
 
 class BlogSettings(models.Model):
-    title = models.CharField(max_length=80, default="Journal", help_text="Heading on the blog homepage.")
+    title = models.CharField(max_length=80, default="Articles", help_text="Heading on the Articles page.")
     intro = models.CharField(
         max_length=300, default="Notes, photos, and progress from the garage.", blank=True,
         help_text="Short line under the heading. Also used for the RSS feed.",
@@ -266,11 +286,11 @@ class BlogSettings(models.Model):
     )
 
     class Meta:
-        verbose_name = "blog settings"
-        verbose_name_plural = "blog settings"
+        verbose_name = "articles page settings"
+        verbose_name_plural = "articles page settings"
 
     def __str__(self):
-        return "Blog settings"
+        return "Articles page settings"
 
     def save(self, *args, **kwargs):
         self.pk = 1

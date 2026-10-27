@@ -1,0 +1,43 @@
+{% load static %}
+{# White header for store pages (shop, product, cart, checkout). The rest of the site uses partials/header.html. #}
+<header data-header class="sticky top-0 z-40 border-b border-neutral-100 bg-white text-ink">
+  <div class="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 md:h-24 lg:px-10">
+    <div class="flex items-center">
+      <nav class="hidden items-center gap-7 text-[12px] uppercase tracking-[0.06em] md:flex" aria-label="Store">
+        <a href="{% url 'shop:collection_all' %}" class="hover:underline hover:decoration-forest hover:decoration-2 hover:underline-offset-8"{% if request.resolver_match.url_name == 'collection_all' %} aria-current="page"{% endif %}>Products</a>
+        <a href="{% url 'core:faq' %}" class="hover:underline hover:decoration-forest hover:decoration-2 hover:underline-offset-8">FAQ</a>
+        <a href="{% url 'blog:list' %}" class="hover:underline hover:decoration-forest hover:decoration-2 hover:underline-offset-8">Articles</a>
+        <a href="{% url 'core:contact' %}" class="hover:underline hover:decoration-forest hover:decoration-2 hover:underline-offset-8">Contact</a>
+      </nav>
+      <details class="group md:hidden" data-mobile-nav>
+        <summary class="-ml-2 flex h-10 w-10 cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden" aria-label="Menu">
+          <svg class="h-6 w-6 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg class="hidden h-6 w-6 group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </summary>
+        <nav class="absolute inset-x-0 top-full z-50 border-b border-neutral-200 bg-white px-4 pb-6 pt-2 shadow-xl sm:px-6" aria-label="Store">
+          <a href="{% url 'core:home' %}" class="block border-b border-neutral-100 py-4 text-sm uppercase tracking-[0.08em]">Home</a>
+          <a href="{% url 'shop:collection_all' %}" class="block border-b border-neutral-100 py-4 text-sm uppercase tracking-[0.08em]">Products</a>
+          <a href="{% url 'core:faq' %}" class="block border-b border-neutral-100 py-4 text-sm uppercase tracking-[0.08em]">FAQ</a>
+          <a href="{% url 'blog:list' %}" class="block border-b border-neutral-100 py-4 text-sm uppercase tracking-[0.08em]">Articles</a>
+          <a href="{% url 'core:contact' %}" class="block py-4 text-sm uppercase tracking-[0.08em]">Contact</a>
+        </nav>
+      </details>
+    </div>
+
+    <a href="{% url 'core:home' %}" class="logo text-[1.7rem] md:text-[2.4rem]" aria-label="{{ brand.name }} home">
+      {{ brand.name }}<span class="text-forest">/</span>
+      {% comment %}
+        Logo picture on the white store header: use a dark logo here, e.g. static/img/logo-dark.png.
+        Delete the "{{ brand.name }}<span ...>/</span>" line above and move this <img> line out of the comment block.
+        <img src="{% static 'img/logo-dark.png' %}" alt="{{ brand.name }}" class="h-9 w-auto md:h-14">
+      {% endcomment %}
+    </a>
+
+    <div class="flex items-center justify-end gap-5">
+      <a href="{% url 'shop:cart' %}" class="flex items-center gap-2 text-[12px] uppercase tracking-[0.06em] hover:text-forest" aria-label="Cart, {{ cart_count|default:0 }} items">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h11l2-8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+        <span><span class="tabular-nums">{{ cart_count|default:0 }}</span><span class="hidden sm:inline"> item{{ cart_count|pluralize }}</span></span>
+      </a>
+    </div>
+  </div>
+</header>

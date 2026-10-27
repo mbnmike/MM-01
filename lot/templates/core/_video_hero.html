@@ -1,0 +1,38 @@
+{% load static %}
+{# Home page top: looping muted video (or still image) with the logo centred. Upload all three in Admin → Site settings. #}
+<section class="relative isolate flex h-[72svh] min-h-[420px] items-center justify-center overflow-hidden bg-ink md:h-[85svh]" data-hero aria-label="{{ brand.name }}">
+  {% if site.hero_video %}
+    <video data-hero-video autoplay muted loop playsinline preload="auto" aria-hidden="true"
+      poster="{% if site.hero_poster %}{{ site.hero_poster.url }}{% else %}{% static 'img/hero.jpg' %}?v={{ asset_version }}{% endif %}"
+      class="absolute inset-0 -z-20 h-full w-full object-cover">
+      <source src="{{ site.hero_video.url }}" type="video/{% if site.hero_video.name|lower|slice:'-5:' == '.webm' %}webm{% else %}mp4{% endif %}">
+    </video>
+  {% elif site.hero_poster %}
+    <img src="{{ site.hero_poster.url }}" alt="" fetchpriority="high" class="absolute inset-0 -z-20 h-full w-full object-cover">
+  {% else %}
+    <img src="{% static 'img/hero.jpg' %}?v={{ asset_version }}" alt="" fetchpriority="high" class="absolute inset-0 -z-20 h-full w-full object-cover object-[center_40%]">
+  {% endif %}
+  <div class="absolute inset-0 -z-10 bg-black/55"></div>
+  <div class="absolute inset-x-0 top-0 -z-10 h-36 bg-gradient-to-b from-black/70 to-transparent"></div>
+  <div class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-coal to-transparent"></div>
+
+  <h1 class="px-6 text-center text-white">
+    {% if site.hero_logo %}
+      <img src="{{ site.hero_logo.url }}" alt="{{ brand.name }}" class="mx-auto h-auto w-[min(78vw,560px)] drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+    {% else %}
+      <span class="logo block text-[9vw] drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-[3rem] md:text-[4.5rem]">{{ brand.name }}<span class="text-forest">/</span></span>
+    {% endif %}
+  </h1>
+
+  <a href="#articles" data-smooth-scroll class="group absolute bottom-6 left-1/2 -translate-x-1/2 p-2 text-white/80 transition hover:text-white" aria-label="Scroll to articles">
+    <svg class="h-7 w-10 motion-safe:animate-nudge group-hover:[animation-play-state:paused]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 40 20"><path d="M4 4l16 12L36 4"/></svg>
+  </a>
+
+  {% if site.hero_video %}
+    <button type="button" data-hero-toggle aria-pressed="false" aria-label="Pause video"
+      class="absolute bottom-6 right-4 flex h-9 w-9 items-center justify-center bg-black/70 text-white transition hover:bg-forest sm:right-6">
+      <svg data-icon-pause class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 14 14"><rect x="2" y="1" width="3.5" height="12"/><rect x="8.5" y="1" width="3.5" height="12"/></svg>
+      <svg data-icon-play class="hidden h-3.5 w-3.5" fill="currentColor" viewBox="0 0 14 14"><path d="M3 1l10 6-10 6z"/></svg>
+    </button>
+  {% endif %}
+</section>

@@ -1,7 +1,7 @@
-# unnamed — car culture magazine + store (Django)
+# !perfect — car culture magazine + store (Django)
 
-One Django codebase: storefront, cart, Stripe Checkout, accounts, blog ("Journal"), and admin.
-Django templates + Tailwind CSS, no JavaScript framework. "unnamed" is a placeholder brand name — set `BRAND_NAME` in `.env` to rename it.
+One Django codebase: storefront, cart, Stripe Checkout, newsletter sign-ups, blog ("Journal"), and admin.
+Django templates + Tailwind CSS, no JavaScript framework. "!perfect" is the brand name — set `BRAND_NAME` in `.env` to rename it.
 
 ## Quick start
 
@@ -12,7 +12,7 @@ python -m venv .venv
 pip install -r requirements.txt
 cp .env.example .env            # Windows: copy .env.example .env
 python manage.py migrate
-python manage.py seed           # 8 products, 6 blog posts, reviews, shipping
+python manage.py seed           # demo products and prints, blog posts, shipping
 python manage.py createsuperuser   # your secret admin username + password
 python manage.py runserver
 ```
@@ -62,7 +62,7 @@ Use that endpoint's signing secret as `STRIPE_WEBHOOK_SECRET`.
 
 ### How checkout works
 
-1. `/checkout/` collects email, address, and a shipping method (guest checkout; logged-in users get the order linked to their account).
+1. `/checkout/` collects email, address, and a shipping method (guest checkout; there are no customer accounts). A checkbox lets buyers subscribe to store updates.
 2. The view creates a **pending** `Order` with its line items, then creates a Stripe Checkout Session (line items + shipping rate + `metadata.order_id`) and redirects to Stripe.
 3. Success URL: `/checkout/success/?session_id={CHECKOUT_SESSION_ID}`. Cancel URL: `/checkout/cancel/`, which goes back to the cart.
 4. `/stripe/webhook/` verifies the signature, then in one transaction marks the order paid and decrements each variant's stock. This is idempotent, so Stripe retries never double-count. Stock never drops below 0.
@@ -77,7 +77,7 @@ Stock is checked when items are added to the cart and again at checkout. It isn'
 - **Inventory:** every variant, sorted by stock, with stock editable directly in the list. Filter by sold out / low / in stock. This is where you adjust stock by hand.
 - **Orders:** payment status, editable fulfillment status and tracking number, bulk "mark packing/shipped/delivered". Orders are only created by checkout.
 - **Blog:** posts (writing editor, see below), tags, media library, comments, blog settings.
-- **Storefront:** homepage featured products (ordered), homepage reviews, contact messages.
+- **Storefront:** store on/off switch, contact messages, subscribers (filter, search, and **Export selected to CSV** with each person's unsubscribe link, for importing into an email tool).
 - Shipping methods and categories.
 
 When every variant of a product hits 0, the product page hides add-to-cart and shows "Sold out". A variant at 0 is disabled in the picker.
@@ -86,9 +86,9 @@ When every variant of a product hits 0, the product page hides add-to-cart and s
 
 Admin → **Core → Site settings** (or the "Store On/Off" card on the dashboard) → untick **Store enabled** → Save. It takes effect immediately:
 
-- Shop, product, cart, checkout, account, login/register, and FAQ pages return 404 to visitors. Shop links, the cart and account icons, and the "Shop the story" block on posts disappear.
+- Shop, product, cart, checkout, and FAQ pages return 404 to visitors. The Store link disappears from the nav.
 - The home page keeps the hero but points to the journal and lists the latest six posts.
-- Nothing is deleted: products, orders, and customer accounts stay in the admin. While logged in as staff you can still open shop pages directly to check them.
+- Nothing is deleted: products and orders stay in the admin. While logged in as staff you can still open shop pages directly to check them.
 - The Stripe webhook keeps working, so payments for orders placed before the switch are still recorded.
 
 Tick the box again to bring the store back.
@@ -97,11 +97,11 @@ Tick the box again to bring the store back.
 
 | URL | Page |
 | --- | --- |
-| `/` | Home: full-screen hero, featured products, reviews, section tiles |
+| `/` | Home: full-screen hero and featured articles (blog only; the nav's Store link is the one tie to the shop) |
 | `/shop/`, `/shop/<category>/` | Collection with sorting |
 | `/products/<slug>/` | Product: gallery, variants, stock, add to cart |
 | `/cart/`, `/checkout/` | Cart and checkout |
-| `/account/`, `/account/login/`, `/account/register/` | Account and order history |
+| `/subscribe/` (POST), `/unsubscribe/<token>/` | Newsletter sign-up from the footer and the sticky Subscribe button; one-click unsubscribe |
 | `/blog/`, `/blog/?q=…` | Blog home: featured post, then posts grouped under month headings, a month bar, search, pagination |
 | `/blog/<year>/<month>/` (e.g. `/blog/2026/10/`) | All posts from that month, with links to the newer/older month |
 | `/blog/tag/<slug>/` | Posts with a tag |
@@ -121,8 +121,7 @@ The nav link is **Journal** (rename it in `templates/partials/header.html`; the 
 
 - The admin is at `/<ADMIN_URL>/`. `/admin/` is a 404, and no public page links to the admin.
 - Log in with a **staff** account. Create it with `python manage.py createsuperuser`, or on a host without a shell set `ADMIN_USERNAME` / `ADMIN_PASSWORD` and run `python manage.py ensure_admin` (then remove the password variable). Change a password with `python manage.py changepassword <username>`.
-- Customer accounts (`/account/register/`) are never staff, so they only ever see the storefront. Django's admin rejects them even if they find the URL.
-- Admin and customer logins allow 10 attempts per 15 minutes per IP, then return HTTP 429. With several server processes, configure a shared cache (Redis or database) so the limit is global.
+- Admin login allows 10 attempts per 15 minutes per IP, then return HTTP 429. With several server processes, configure a shared cache (Redis or database) so the limit is global.
 - Staff see a small "Edit post" link on published posts. Visitors never do.
 
 ### Writing posts
@@ -137,7 +136,7 @@ Admin → **Blog → Posts → Add post** (or "Write a post" on the dashboard) o
 - **Save draft / Publish / Update / Unpublish.** Drafts are only visible to staff. A future publish date schedules the post, and it stays hidden until then. "Updated on" is optional and shown on the post.
 - **Unsaved changes:** the top bar shows the save state, and the browser warns before you leave with unsaved edits. Your text is backed up to the database a few seconds after you stop typing. If you return to a post with a newer backup than the saved version, you're offered **Restore** or **Discard**.
 - **Delete post…** (sidebar) goes to a confirmation page.
-- Sidebar: publish date, updated date, featured (the newest featured post leads the blog home), allow comments, author, cover photo with description and caption, tags, SEO description, and "Shop the story" products.
+- Sidebar: publish date, updated date, featured (the newest featured post leads the blog home), allow comments, author, cover photo with description and caption, tags, and SEO description.
 
 Existing posts written as HTML or plain text still render. All post HTML is sanitized (no scripts, iframes, or event handlers).
 
@@ -179,7 +178,7 @@ python manage.py test
 
 Covers cart stock limits, sold-out hiding, the checkout → Stripe redirect (mocked), webhook signature checks, paid status, stock decrement, idempotency, page rendering, store sections, registration, and admin screens.
 
-Blog tests (`blog/tests.py`) cover: Markdown rendering and sanitizing (scripts, event handlers, `javascript:` links); figures and galleries; draft and scheduled posts hidden from list, search, month archive, feed, and detail pages, even for logged-in customers; month archive navigation; staff-only previews; save draft, publish, schedule, and unpublish; delete confirmation; autosave and restore; the upload pipeline (EXIF/GPS stripped, rotation fixed, resized, non-images rejected); the editor endpoints refusing non-staff; comment moderation, escaping, honeypot, token timing, rate limits, duplicates, blocked words, and email privacy; admin and login throttling; the secret admin path; and that public pages never reveal the admin URL.
+Blog tests (`blog/tests.py`) cover: Markdown rendering and sanitizing (scripts, event handlers, `javascript:` links); figures and galleries; draft and scheduled posts hidden from list, search, month archive, feed, and detail pages, even for logged-in non-staff users; month archive navigation; staff-only previews; save draft, publish, schedule, and unpublish; delete confirmation; autosave and restore; the upload pipeline (EXIF/GPS stripped, rotation fixed, resized, non-images rejected); the editor endpoints refusing non-staff; comment moderation, escaping, honeypot, token timing, rate limits, duplicates, blocked words, and email privacy; admin and login throttling; the secret admin path; and that public pages never reveal the admin URL.
 
 ## Database: SQLite now, Postgres when you're ready
 
@@ -222,10 +221,10 @@ The `psycopg[binary]` driver installs from ready-made wheels on Windows, macOS a
 
 ```
 config/   settings, urls
-core/     home, FAQ, contact, accounts, featured products, reviews, seed command, admin dashboard
+core/     home, FAQ, contact, subscribers, seed command, admin dashboard
 shop/     catalog, variants/inventory, session cart, orders, checkout + Stripe webhook
 blog/     posts, month archive, tags, media library, comments + moderation, Markdown rendering/sanitizing,
           image processing, admin writing editor (templates/admin/blog/post/editor.html, static/js/editor.js)
-templates/  base layout, partials, account pages, 404/500, admin overrides
+templates/  base layout, partials (header, footer, subscribe), 404/500, admin overrides
 static/   compiled CSS, admin theme, small vanilla JS (gallery, variant picker, cart steppers)
 ```

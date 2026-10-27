@@ -1,45 +1,35 @@
+{% load static %}
 {% if overlay %}
 <header data-header data-overlay data-scrolled="false"
-  class="fixed inset-x-0 top-0 z-40 text-white transition-colors duration-300 data-[scrolled=true]:bg-ink">
+  class="fixed inset-x-0 top-0 z-40 border-b border-transparent text-white transition-colors duration-300 data-[scrolled=true]:border-white/10 data-[scrolled=true]:bg-ink">
 {% else %}
-<header data-header class="sticky top-0 z-40 bg-ink text-white">
+<header data-header class="sticky top-0 z-40 border-b border-white/10 bg-ink text-white">
 {% endif %}
   <div class="flex h-16 items-center justify-between gap-6 px-4 sm:px-6 md:h-[72px] lg:px-10">
     <a href="{% url 'core:home' %}" class="logo text-[1.7rem] md:text-[2rem]" aria-label="{{ brand.name }} home">
-      {{ brand.name }}<span class="text-forest">/</span>
+      !perfect<span class="text-forest">/</span>
+      {% comment %}
+        To use a logo picture instead of the text above:
+        1. Save the image as static/img/logo.png (a white or light logo on a transparent background works best on the dark header).
+        2. Delete the "{{ brand.name }}<span ...>/</span>" line above.
+        3. Move the <img> line below out of this comment block.
+        Change h-8 / md:h-10 to make the logo smaller or bigger.
+        <img src="{% static 'img/logo.png' %}" alt="{{ brand.name }}" class="h-8 w-auto md:h-10">
+      {% endcomment %}
     </a>
 
     <nav class="hidden items-center gap-7 md:flex" aria-label="Main">
       {% if store_enabled %}
         <a href="{% url 'shop:collection_all' %}" class="nav-link"{% if request.resolver_match.namespace == 'shop' %} aria-current="page"{% endif %}>Store</a>
       {% endif %}
-      <a href="{% url 'blog:list' %}" class="nav-link"{% if request.resolver_match.namespace == 'blog' %} aria-current="page"{% endif %}>Journal</a>
-      {% if store_enabled %}
-        <a href="{% url 'core:faq' %}" class="nav-link">FAQ</a>
-      {% endif %}
+      <a href="{% url 'blog:list' %}" class="nav-link"{% if request.resolver_match.namespace == 'blog' %} aria-current="page"{% endif %}>Articles</a>
       <a href="{% url 'core:contact' %}" class="nav-link">Contact</a>
       <a href="{% url 'blog:list' %}#blog-search" class="opacity-90 transition hover:opacity-100" aria-label="Search">
         <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       </a>
-      {% if store_enabled %}
-        <span class="h-5 w-px bg-white/25" aria-hidden="true"></span>
-        <a href="{% url 'core:account' %}" class="opacity-90 transition hover:opacity-100" aria-label="Account">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-        </a>
-        <a href="{% url 'shop:cart' %}" class="flex items-center gap-1.5 opacity-90 transition hover:opacity-100" aria-label="Cart, {{ cart_count }} items">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
-          {% if cart_count %}<span class="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-forest px-1 text-[11px] font-bold">{{ cart_count }}</span>{% endif %}
-        </a>
-      {% endif %}
     </nav>
 
     <div class="flex items-center gap-1 md:hidden">
-      {% if store_enabled %}
-        <a href="{% url 'shop:cart' %}" class="flex h-10 items-center gap-1.5 px-2" aria-label="Cart, {{ cart_count }} items">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
-          {% if cart_count %}<span class="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-forest px-1 text-[11px] font-bold">{{ cart_count }}</span>{% endif %}
-        </a>
-      {% endif %}
       <details class="group" data-mobile-nav>
         <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center [&::-webkit-details-marker]:hidden" aria-label="Menu">
           <svg class="h-6 w-6 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -50,11 +40,7 @@
           {% if store_enabled %}
             <a href="{% url 'shop:collection_all' %}" class="block border-b border-white/10 py-4 text-sm font-semibold uppercase tracking-[0.12em]">Store</a>
           {% endif %}
-          <a href="{% url 'blog:list' %}" class="block border-b border-white/10 py-4 text-sm font-semibold uppercase tracking-[0.12em]">Journal</a>
-          {% if store_enabled %}
-            <a href="{% url 'core:faq' %}" class="block border-b border-white/10 py-4 text-sm font-semibold uppercase tracking-[0.12em]">FAQ</a>
-            <a href="{% url 'core:account' %}" class="block border-b border-white/10 py-4 text-sm font-semibold uppercase tracking-[0.12em]">Account</a>
-          {% endif %}
+          <a href="{% url 'blog:list' %}" class="block border-b border-white/10 py-4 text-sm font-semibold uppercase tracking-[0.12em]">Articles</a>
           <a href="{% url 'core:contact' %}" class="block py-4 text-sm font-semibold uppercase tracking-[0.12em]">Contact</a>
         </nav>
       </details>

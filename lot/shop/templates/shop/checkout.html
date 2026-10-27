@@ -20,14 +20,13 @@
       {% if form.non_field_errors %}<div class="text-sm text-red-600">{{ form.non_field_errors }}</div>{% endif %}
 
       <fieldset>
-        <div class="flex items-baseline justify-between">
-          <legend class="h-display text-xl">Contact</legend>
-          {% if not user.is_authenticated %}
-            <p class="text-xs text-neutral-500">Have an account? <a href="{% url 'core:login' %}?next={% url 'shop:checkout' %}" class="font-semibold text-ink underline">Log in</a></p>
-          {% endif %}
-        </div>
+        <legend class="h-display text-xl">Contact</legend>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           {% field form.email "sm:col-span-2" %}
+          <label class="flex items-center gap-3 text-sm sm:col-span-2">
+            {{ form.subscribe }}
+            <span>{{ form.subscribe.label }}</span>
+          </label>
           {% field form.full_name %}
           {% field form.phone %}
         </div>

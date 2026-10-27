@@ -115,6 +115,12 @@
 
     <aside class="lot-side">
       <section class="lot-card">
+        <h3>Category</h3>
+        {% include "admin/blog/post/_field.html" with field=f.category %}
+        <a class="lot-link" href="{% url 'admin:blog_postcategory_changelist' %}" target="_blank" rel="noopener">Manage categories ↗</a>
+      </section>
+
+      <section class="lot-card">
         <h3>Publishing</h3>
         {% include "admin/blog/post/_field.html" with field=f.published_at %}
         {% include "admin/blog/post/_field.html" with field=f.updated_on %}
@@ -144,11 +150,6 @@
         <summary>Search &amp; sharing</summary>
         {% include "admin/blog/post/_field.html" with field=f.meta_description %}
         {% include "admin/blog/post/_field.html" with field=f.schema_type %}
-      </details>
-
-      <details class="lot-card">
-        <summary>Shop the story</summary>
-        {% include "admin/blog/post/_field.html" with field=f.related_products %}
       </details>
     </aside>
   </div>

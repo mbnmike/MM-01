@@ -1,19 +1,18 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
+from django.core import signing
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from blog.models import BlogSettings, Post
-from shop.models import Order, Product
 
-from .admin_site import LOGIN_ATTEMPTS, LOGIN_WINDOW
-from .forms import ContactForm, LoginForm, RegisterForm
-from .models import ContactMessage, FeaturedProduct, SiteSettings
+from .forms import ContactForm, SubscribeForm
+from .models import ContactMessage, SiteSettings, Subscriber
 from .ratelimit import too_many
 
 FAQS = [
@@ -29,27 +28,21 @@ FAQS = [
      "Unworn apparel can be returned within 30 days. Stickers and car accessories are final sale unless they arrive damaged."),
     ("Do your plate frames fit my car?",
      "Our frames fit standard US 12 × 6 in. plates. Check your local rules — some states don't allow frames that cover text."),
+    ("How are prints made and shipped?",
+     "Each print is made to order on 310 gsm archival cotton rag with pigment inks, then shipped rolled in a sturdy "
+     "tube within 5–7 business days. Prints come unframed with a white border for framing."),
     ("Is checkout secure?",
      "Payments are handled by Stripe. We never see or store your card number."),
 ]
 
 
 def home(request):
-    posts = Post.objects.published().select_related("author").prefetch_related("tags")
-    hero_post = posts.filter(is_featured=True).first() or posts.first()
-    if hero_post:
-        posts = posts.exclude(pk=hero_post.pk)
+    posts = (
+        Post.objects.published().select_related("category")
+        .order_by("-is_featured", "-published_at", "-pk")
+    )
     page = Paginator(posts, BlogSettings.load().posts_per_page).get_page(request.GET.get("page"))
-    context = {"hero_post": hero_post, "page": page}
-    if page.number == 1 and SiteSettings.load().store_enabled:
-        featured = [
-            f.product
-            for f in FeaturedProduct.objects.select_related("product", "product__category")
-            .prefetch_related("product__images", "product__variants")
-            .filter(product__is_active=True)[:4]
-        ]
-        context["featured"] = featured or list(Product.objects.for_listing()[:4])
-    return render(request, "core/home.html", context)
+    return render(request, "core/home.html", {"page": page, "site": SiteSettings.load()})
 
 
 def faq(request):
@@ -65,43 +58,37 @@ def contact(request):
     return render(request, "core/contact.html", {"form": form})
 
 
-class LoginView(auth_views.LoginView):
-    template_name = "account/login.html"
-    authentication_form = LoginForm
-    redirect_authenticated_user = True
-
-    def post(self, request, *args, **kwargs):
-        if too_many(request, "login", LOGIN_ATTEMPTS, LOGIN_WINDOW):
-            return render(request, "429.html", status=429)
-        return super().post(request, *args, **kwargs)
-
-
-def register(request):
-    if request.user.is_authenticated:
-        return redirect("core:account")
-    form = RegisterForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        user = form.save()
-        login(request, user)
-        messages.success(request, "Account created. Welcome in.")
-        return redirect("core:account")
-    return render(request, "account/register.html", {"form": form})
+@require_POST
+def subscribe(request):
+    back = request.POST.get("next", "")
+    if not url_has_allowed_host_and_scheme(back, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        back = reverse("core:home")
+    if too_many(request, "subscribe", 5, 10 * 60):
+        return render(request, "429.html", status=429)
+    form = SubscribeForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Please enter a valid email address.")
+        return redirect(back)
+    if not form.cleaned_data["website"]:
+        Subscriber.add(form.cleaned_data["email"], form.cleaned_data["source"] or Subscriber.Source.FOOTER)
+    request.session["subscribed"] = True
+    messages.success(request, "You're subscribed. Thanks for following along.")
+    return redirect(back)
 
 
-@login_required
-def account(request):
-    orders = (
-        request.user.orders.exclude(status=Order.Status.CANCELLED)
-        .prefetch_related(Prefetch("items"))
-        .order_by("-created_at")
-    )
-    return render(request, "account/account.html", {"orders": orders})
-
-
-@login_required
-def account_order(request, number):
-    order = get_object_or_404(Order.objects.prefetch_related("items"), number=number, user=request.user)
-    return render(request, "account/order_detail.html", {"order": order})
+def unsubscribe(request, token):
+    try:
+        email = signing.loads(token, salt="unsubscribe")
+    except signing.BadSignature:
+        raise Http404
+    sub = get_object_or_404(Subscriber, email=email)
+    if request.method == "POST":
+        if sub.is_active:
+            sub.is_active, sub.unsubscribed_at = False, timezone.now()
+            sub.save(update_fields=["is_active", "unsubscribed_at"])
+        request.session.pop("subscribed", None)
+        return render(request, "core/unsubscribe.html", {"done": True})
+    return render(request, "core/unsubscribe.html", {"sub": sub})
 
 
 def preview_404(request):

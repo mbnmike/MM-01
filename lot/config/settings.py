@@ -111,10 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LOGIN_URL = "core:login"
-LOGIN_REDIRECT_URL = "core:account"
-LOGOUT_REDIRECT_URL = "core:home"
-
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
@@ -165,7 +161,7 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "hello@unnamed.example")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "hello@notperfect.example")
 
 # Stripe — secret values are only ever read server-side.
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
@@ -177,10 +173,13 @@ CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL", "$")
 LOW_STOCK_THRESHOLD = int(os.environ.get("LOW_STOCK_THRESHOLD", "3"))
 
 BRAND = {
-    "name": os.environ.get("BRAND_NAME", "unnamed"),
-    "tagline": "Car culture & motorsport",
+    "name": os.environ.get("BRAND_NAME", "!perfect"),    "tagline": "Car culture & motorsport",
     "description": "Builds, events, drives, and the people behind them.",
-    "email": os.environ.get("BRAND_EMAIL", "hello@unnamed.example"),
+    "email": os.environ.get("BRAND_EMAIL", "hello@notperfect.example"),
+    # Footer icons; any left blank are hidden.
+    "instagram": os.environ.get("SOCIAL_INSTAGRAM", ""),
+    "facebook": os.environ.get("SOCIAL_FACEBOOK", ""),
+    "x": os.environ.get("SOCIAL_X", ""),
 }
 
 if not DEBUG:

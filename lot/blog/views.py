@@ -15,11 +15,11 @@ from core.utils import json_ld
 from . import services
 from .forms import CommentForm, comment_token
 from .models import BlogSettings, Comment, Post, Tag
-from .rendering import PROSE_CLASSES
+from .rendering import PROSE_DARK_CLASSES
 
 
 def _published():
-    return Post.objects.published().select_related("author").prefetch_related("tags")
+    return Post.objects.published().select_related("author", "category").prefetch_related("tags")
 
 
 def _archive_months():
@@ -94,12 +94,10 @@ def post_list(request, tag_slug=None, year=None, month=None):
     })
 
 
-def post_context(request, post, *, form=None, tags=None, related_products=None, preview=False):
+def post_context(request, post, *, form=None, tags=None, preview=False):
     """Everything post_detail.html needs. Also used by the admin's preview of unsaved edits."""
     cfg = BlogSettings.load()
     tags = list(post.tags.all()) if tags is None else tags
-    if related_products is None:
-        related_products = list(post.related_products.for_listing()[:4]) if post.pk else []
 
     related = []
     if post.pk:
@@ -112,9 +110,8 @@ def post_context(request, post, *, form=None, tags=None, related_products=None, 
     return {
         "post": post,
         "post_tags": tags,
-        "prose_classes": PROSE_CLASSES,
+        "prose_classes": PROSE_DARK_CLASSES,
         "related_posts": related,
-        "related_products": related_products,
         "comments": post.comments.filter(status=Comment.Status.APPROVED) if post.pk else [],
         "comments_open": cfg.comments_enabled and post.allow_comments and not preview,
         "form": form or CommentForm(post=post),

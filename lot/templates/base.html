@@ -18,10 +18,13 @@
   {% block head_extra %}{% endblock %}
   {% block schema %}{% endblock %}
 </head>
-<body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
+<body class="flex min-h-screen flex-col font-sans antialiased {% if in_store %}bg-white text-ink{% else %}theme-dark bg-coal text-neutral-100{% endif %}">
   <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-forest focus:px-3 focus:py-2 focus:text-sm focus:text-white">Skip to content</a>
 
-  {% block header %}{% include "partials/header.html" with overlay=False %}{% endblock %}
+  {% block header %}
+    {% if in_store %}{% include "partials/header_store.html" %}
+    {% else %}{% include "partials/header.html" with overlay=False %}{% endif %}
+  {% endblock %}
 
   {% include "partials/messages.html" %}
 
@@ -29,38 +32,30 @@
     {% block content %}{% endblock %}
   </main>
 
+  {% if in_store %}
   <footer class="mt-24 bg-ink text-white">
     <div class="flex flex-col items-center gap-8 px-4 py-14 text-center sm:px-6 lg:px-10">
       <a href="{% url 'core:home' %}" class="logo text-4xl md:text-5xl">{{ brand.name }}<span class="text-forest">/</span></a>
       <p class="max-w-md text-sm text-neutral-400">{{ brand.description }}</p>
       <nav class="flex flex-wrap justify-center gap-x-7 gap-y-3" aria-label="Footer">
         <a class="nav-link" href="{% url 'core:home' %}">Home</a>
-        {% if store_enabled %}<a class="nav-link" href="{% url 'shop:collection_all' %}">Store</a>{% endif %}
-        <a class="nav-link" href="{% url 'blog:list' %}">Journal</a>
-        {% if store_enabled %}
-          <a class="nav-link" href="{% url 'core:faq' %}">FAQ</a>
-          {% if user.is_authenticated %}
-            <a class="nav-link" href="{% url 'core:account' %}">Order history</a>
-          {% else %}
-            <a class="nav-link" href="{% url 'core:login' %}">Log in</a>
-          {% endif %}
-        {% endif %}
+        <a class="nav-link" href="{% url 'shop:collection_all' %}">Store</a>
+        <a class="nav-link" href="{% url 'blog:list' %}">Articles</a>
+        <a class="nav-link" href="{% url 'core:faq' %}">FAQ</a>
         <a class="nav-link" href="{% url 'core:contact' %}">Contact</a>
-        <a class="nav-link" href="{% url 'blog:feed' %}">RSS</a>
       </nav>
-      {% if store_enabled and user.is_authenticated %}
-        <form method="post" action="{% url 'core:logout' %}">{% csrf_token %}
-          <button class="text-xs text-neutral-500 hover:text-white hover:underline">Log out</button>
-        </form>
-      {% endif %}
     </div>
     <div class="border-t border-white/10">
       <div class="flex flex-col items-center justify-between gap-2 px-4 py-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500 sm:flex-row sm:px-6 lg:px-10">
         <p>{% now "Y" %} &copy; {{ brand.name }}</p>
-        {% if store_enabled %}<p>Payments secured by Stripe</p>{% else %}<a href="mailto:{{ brand.email }}" class="normal-case tracking-normal hover:text-white">{{ brand.email }}</a>{% endif %}
+        <p>Payments secured by Stripe</p>
       </div>
     </div>
   </footer>
+  {% else %}
+    {% include "partials/footer.html" %}
+    {% if not subscribed and not preview %}{% include "partials/subscribe_popup.html" %}{% endif %}
+  {% endif %}
 
   <script src="{% static 'js/app.js' %}?v={{ asset_version }}" defer></script>
 </body>

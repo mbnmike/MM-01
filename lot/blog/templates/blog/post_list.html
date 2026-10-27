@@ -17,23 +17,23 @@
   <header class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
     <div class="max-w-2xl">
       {% if is_filtered %}
-        <a href="{% url 'blog:list' %}" class="eyebrow hover:text-ink">← {{ cfg.title }}</a>
+        <a href="{% url 'blog:list' %}" class="eyebrow hover:text-white">← {{ cfg.title }}</a>
         <h1 class="h-display mt-3 text-4xl md:text-6xl">
           {% if selected_month %}{{ selected_month|date:"F Y" }}{% elif tag %}#{{ tag.name }}{% else %}Search{% endif %}
         </h1>
-        {% if selected_month %}<p class="mt-4 text-neutral-600">{{ page.paginator.count }} post{{ page.paginator.count|pluralize }}</p>{% endif %}
-        {% if query %}<p class="mt-4 text-neutral-600">{{ page.paginator.count }} result{{ page.paginator.count|pluralize }} for “{{ query }}”</p>{% endif %}
+        {% if selected_month %}<p class="mt-4 text-neutral-400">{{ page.paginator.count }} post{{ page.paginator.count|pluralize }}</p>{% endif %}
+        {% if query %}<p class="mt-4 text-neutral-400">{{ page.paginator.count }} result{{ page.paginator.count|pluralize }} for “{{ query }}”</p>{% endif %}
       {% else %}
         <h1 class="h-display text-4xl md:text-6xl">{{ cfg.title }}</h1>
-        {% if cfg.intro %}<p class="mt-4 max-w-xl font-serif text-lg leading-relaxed text-neutral-600 md:text-xl">{{ cfg.intro }}</p>{% endif %}
+        {% if cfg.intro %}<p class="mt-4 max-w-xl font-serif text-lg leading-relaxed text-neutral-400 md:text-xl">{{ cfg.intro }}</p>{% endif %}
       {% endif %}
     </div>
     <form action="{% url 'blog:list' %}" method="get" role="search" class="w-full md:w-80">
-      <label for="blog-search" class="sr-only">Search the blog</label>
-      <div class="flex border-b-2 border-ink focus-within:border-forest">
+      <label for="blog-search" class="sr-only">Search articles</label>
+      <div class="flex border-b-2 border-neutral-600 focus-within:border-forest">
         <input id="blog-search" type="search" name="q" value="{{ query }}" placeholder="Search posts" maxlength="100"
           class="w-full border-0 bg-transparent px-0 py-2.5 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-0">
-        <button class="px-2 text-ink hover:text-forest" aria-label="Search">
+        <button class="px-2 text-white hover:text-forest-light" aria-label="Search">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         </button>
       </div>
@@ -41,11 +41,11 @@
   </header>
 
   {% if months %}
-    <nav class="-mx-4 mt-10 overflow-x-auto border-y border-neutral-200 px-4 sm:mx-0 sm:px-0" aria-label="Browse by month">
+    <nav class="-mx-4 mt-10 overflow-x-auto border-y border-white/10 px-4 sm:mx-0 sm:px-0" aria-label="Browse by month">
       <ul class="flex min-w-max gap-7 text-xs font-bold uppercase tracking-[0.18em]">
-        <li><a href="{% url 'blog:list' %}" class="block border-b-2 py-4 transition {% if not is_filtered %}border-forest text-ink{% else %}border-transparent text-neutral-500 hover:text-ink{% endif %}"{% if not is_filtered %} aria-current="page"{% endif %}>All posts</a></li>
+        <li><a href="{% url 'blog:list' %}" class="block border-b-2 py-4 transition {% if not is_filtered %}border-forest text-white{% else %}border-transparent text-neutral-500 hover:text-white{% endif %}"{% if not is_filtered %} aria-current="page"{% endif %}>All posts</a></li>
         {% for m, n in months %}
-          <li><a href="{% url 'blog:month' m.year m.month %}" class="block border-b-2 py-4 transition {% if selected_month == m %}border-forest text-ink{% else %}border-transparent text-neutral-500 hover:text-ink{% endif %}"{% if selected_month == m %} aria-current="page"{% endif %}>{{ m|date:"M Y" }} <span class="font-medium text-neutral-400">{{ n }}</span></a></li>
+          <li><a href="{% url 'blog:month' m.year m.month %}" class="block border-b-2 py-4 transition {% if selected_month == m %}border-forest text-white{% else %}border-transparent text-neutral-500 hover:text-white{% endif %}"{% if selected_month == m %} aria-current="page"{% endif %}>{{ m|date:"M Y" }} <span class="font-medium text-neutral-400">{{ n }}</span></a></li>
         {% endfor %}
       </ul>
     </nav>
@@ -60,9 +60,9 @@
       {% regroup page.object_list by published_month as month_groups %}
       {% for group in month_groups %}
         <section class="mt-16 md:mt-20" aria-labelledby="month-{{ group.grouper|date:'Y-m' }}">
-          <div class="flex items-baseline justify-between gap-4 border-b border-neutral-200 pb-3">
+          <div class="flex items-baseline justify-between gap-4 border-b border-white/10 pb-3">
             <h2 id="month-{{ group.grouper|date:'Y-m' }}" class="h-display text-2xl md:text-3xl">{{ group.grouper|date:"F Y" }}</h2>
-            {% if not is_filtered %}<a href="{% url 'blog:month' group.grouper.year group.grouper.month %}" class="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500 hover:text-forest">All {{ group.grouper|date:"F" }} posts →</a>{% endif %}
+            {% if not is_filtered %}<a href="{% url 'blog:month' group.grouper.year group.grouper.month %}" class="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500 hover:text-forest-light">All {{ group.grouper|date:"F" }} posts →</a>{% endif %}
           </div>
           <div class="mt-8 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {% for post in group.list %}{% include "blog/_card.html" %}{% endfor %}
@@ -71,7 +71,7 @@
       {% endfor %}
     {% endif %}
   {% elif not featured %}
-    <div class="mt-12 border border-dashed border-neutral-300 px-6 py-20 text-center">
+    <div class="mt-12 border border-dashed border-neutral-700 px-6 py-20 text-center">
       {% if query %}
         <p class="font-serif text-xl">Nothing matches “{{ query }}”.</p>
         <p class="mt-2 text-sm text-neutral-500">Try a different word, or <a class="link-accent" href="{% url 'blog:list' %}">browse all posts</a>.</p>
@@ -88,12 +88,12 @@
   {% include "partials/pagination.html" %}
 
   {% if selected_month %}
-    <nav class="mt-16 grid grid-cols-2 gap-4 border-t border-neutral-200 pt-6" aria-label="Other months">
+    <nav class="mt-16 grid grid-cols-2 gap-4 border-t border-white/10 pt-6" aria-label="Other months">
       <div>
         {% if newer_month %}
           <a href="{% url 'blog:month' newer_month.year newer_month.month %}" class="group block">
             <span class="eyebrow">← Newer</span>
-            <span class="mt-1 block text-xl font-semibold group-hover:text-forest md:text-2xl">{{ newer_month|date:"F Y" }}</span>
+            <span class="mt-1 block text-xl font-semibold group-hover:text-forest-light md:text-2xl">{{ newer_month|date:"F Y" }}</span>
           </a>
         {% endif %}
       </div>
@@ -101,7 +101,7 @@
         {% if older_month %}
           <a href="{% url 'blog:month' older_month.year older_month.month %}" class="group block">
             <span class="eyebrow">Older →</span>
-            <span class="mt-1 block text-xl font-semibold group-hover:text-forest md:text-2xl">{{ older_month|date:"F Y" }}</span>
+            <span class="mt-1 block text-xl font-semibold group-hover:text-forest-light md:text-2xl">{{ older_month|date:"F Y" }}</span>
           </a>
         {% endif %}
       </div>
@@ -109,11 +109,11 @@
   {% endif %}
 
   {% if tags and not selected_month %}
-    <section class="mt-20 border-t border-neutral-200 pt-10" aria-labelledby="tags-heading">
+    <section class="mt-20 border-t border-white/10 pt-10" aria-labelledby="tags-heading">
       <h2 id="tags-heading" class="eyebrow">Browse by tag</h2>
       <ul class="mt-5 flex flex-wrap gap-2">
         {% for t in tags %}
-          <li><a href="{{ t.get_absolute_url }}" class="inline-block border px-3 py-1.5 text-xs font-semibold transition {% if tag == t %}border-forest bg-forest text-white{% else %}border-neutral-300 text-neutral-700 hover:border-ink hover:text-ink{% endif %}">#{{ t.name }}</a></li>
+          <li><a href="{{ t.get_absolute_url }}" class="inline-block border px-3 py-1.5 text-xs font-semibold transition {% if tag == t %}border-forest bg-forest text-white{% else %}border-neutral-700 text-neutral-300 hover:border-white hover:text-white{% endif %}">#{{ t.name }}</a></li>
         {% endfor %}
       </ul>
     </section>

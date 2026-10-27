@@ -18,6 +18,8 @@
   .h-display { @apply font-sans font-semibold leading-[1.08] tracking-[-0.02em]; }
   .logo { @apply font-display lowercase italic leading-none tracking-[-0.04em]; }
   .nav-link { @apply text-[13px] font-semibold uppercase tracking-[0.08em] opacity-90 transition hover:opacity-100 hover:underline hover:decoration-forest hover:decoration-2 hover:underline-offset-8; }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
   .section-title { @apply text-center text-lg font-semibold uppercase tracking-[0.2em] md:text-xl; }
   .container-x { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
   .link-accent { @apply underline decoration-forest decoration-2 underline-offset-4; }
@@ -37,4 +39,12 @@
   .post-body > figure, .post-body > .gallery { @apply lg:-mx-20 xl:-mx-28; }
   .post-body > figure > figcaption { @apply lg:px-20 xl:px-28; }
   .post-body table { @apply font-sans text-base; }
+
+  /* Blog side (dark). Shared pieces like buttons and form fields switch here; store pages stay light. */
+  .theme-dark .eyebrow { @apply text-neutral-400; }
+  .theme-dark .btn-primary { @apply bg-forest text-white hover:bg-forest-dark; }
+  .theme-dark .btn-outline { @apply border-white text-white hover:bg-white hover:text-ink; }
+  .theme-dark .field-input { @apply border-neutral-700 bg-neutral-900 text-white placeholder:text-neutral-500 focus:border-white focus:ring-white; }
+  .theme-dark .field-label { @apply text-neutral-400; }
+  .theme-dark .post-body figure img { @apply bg-neutral-900; }
 }

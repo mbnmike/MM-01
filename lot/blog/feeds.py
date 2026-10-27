@@ -9,16 +9,16 @@ class LatestPostsFeed(Feed):
     link = reverse_lazy("blog:list")
 
     def title(self):
-        return f"{BlogSettings.load().title} — {settings.BRAND['name']}"
+        return f"Articles — {settings.BRAND['name']}"
 
     def description(self):
         return BlogSettings.load().intro
 
     def items(self):
-        return Post.objects.published().select_related("author")[:20]
+        return Post.objects.published().select_related("author", "category")[:20]
 
     def item_title(self, item):
-        return item.title
+        return item.display_title
 
     def item_description(self, item):
         return item.summary

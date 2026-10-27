@@ -8,17 +8,17 @@
     <p class="mt-6 text-sm text-neutral-500">Comments appear here once the post is published.</p>
   {% else %}
     {% if comments %}
-      <ol class="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
+      <ol class="mt-8 divide-y divide-white/10 border-y border-white/10">
         {% for c in comments %}
           <li id="comment-{{ c.pk }}" class="scroll-mt-28 py-7">
             <div class="flex items-center gap-3">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bone text-sm font-bold text-ink" aria-hidden="true">{{ c.display_name|first|upper }}</span>
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-sm font-bold text-white ring-1 ring-forest/60" aria-hidden="true">{{ c.display_name|first|upper }}</span>
               <div class="leading-tight">
                 <p class="text-sm font-semibold">{{ c.display_name }}</p>
                 <time class="text-xs text-neutral-500" datetime="{{ c.created_at|date:'c' }}">{{ c.created_at|date:"M j, Y · g:i A" }}</time>
               </div>
             </div>
-            <div class="mt-3 break-words pl-12 font-serif text-[1.05rem] leading-relaxed text-neutral-800">{{ c.body|linebreaksbr }}</div>
+            <div class="mt-3 break-words pl-12 font-serif text-[1.05rem] leading-relaxed text-neutral-200">{{ c.body|linebreaksbr }}</div>
           </li>
         {% endfor %}
       </ol>
@@ -27,10 +27,10 @@
     {% endif %}
 
     {% if comments_open %}
-      <form id="comment-form" method="post" action="{% url 'blog:comment' post.slug %}#comment-form" class="mt-10 scroll-mt-28 bg-bone p-6 md:p-8">
+      <form id="comment-form" method="post" action="{% url 'blog:comment' post.slug %}#comment-form" class="mt-10 scroll-mt-28 border border-white/10 bg-neutral-900 p-6 md:p-8">
         {% csrf_token %}
         <h3 class="text-lg font-bold tracking-tight">Leave a comment</h3>
-        <p class="mt-1 text-sm text-neutral-600">No account needed.</p>
+        <p class="mt-1 text-sm text-neutral-400">No account needed.</p>
 
         {% if form.non_field_errors %}
           <div class="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
@@ -53,7 +53,7 @@
         <input type="hidden" name="token" value="{{ comment_token }}">
 
         <p class="mt-5 text-xs leading-relaxed text-neutral-500">
-          <strong class="font-semibold text-neutral-700">Privacy:</strong>
+          <strong class="font-semibold text-neutral-300">Privacy:</strong>
           Your email is never shown publicly or shared. We use it only to moderate comments and, if needed, to reply to you about your comment.
           It's kept as long as your comment is on the site; email <a class="underline" href="mailto:{{ brand.email }}">{{ brand.email }}</a> to have it removed.
           Comments may be held for review before they appear.
@@ -61,7 +61,7 @@
         <button class="btn-primary mt-6">Post comment</button>
       </form>
     {% else %}
-      <p class="mt-8 border-t border-neutral-200 pt-6 text-sm text-neutral-500">Comments are closed on this post.</p>
+      <p class="mt-8 border-t border-white/10 pt-6 text-sm text-neutral-500">Comments are closed on this post.</p>
     {% endif %}
   {% endif %}
 </section>

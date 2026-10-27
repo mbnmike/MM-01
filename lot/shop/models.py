@@ -173,9 +173,6 @@ class Order(models.Model):
         DELIVERED = "delivered", "Delivered"
 
     number = models.CharField(max_length=12, unique=True, editable=False)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders"
-    )
     email = models.EmailField()
     full_name = models.CharField(max_length=120)
     phone = models.CharField(max_length=40, blank=True)

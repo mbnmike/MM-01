@@ -24,6 +24,10 @@ class ShippingChoiceField(forms.ModelChoiceField):
 
 class CheckoutForm(StyledFormMixin, forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={"autocomplete": "email"}))
+    subscribe = forms.BooleanField(
+        label="Email me about new drops and store updates", required=False,
+        widget=forms.CheckboxInput(attrs={"class": "h-4 w-4 accent-ink"}),
+    )
     full_name = forms.CharField(max_length=120, widget=forms.TextInput(attrs={"autocomplete": "name"}))
     phone = forms.CharField(max_length=40, required=False, widget=forms.TextInput(attrs={"autocomplete": "tel"}))
     address_line1 = forms.CharField(

@@ -1,0 +1,14 @@
+{# Params: source ("footer" | "popup"), dark (bool), field_id. #}
+<form method="post" action="{% url 'core:subscribe' %}" class="relative">
+  {% csrf_token %}
+  <input type="hidden" name="source" value="{{ source }}">
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <div class="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+    <label for="{{ field_id }}-website">Leave this field empty</label>
+    <input id="{{ field_id }}-website" type="text" name="website" tabindex="-1" autocomplete="off">
+  </div>
+  <label for="{{ field_id }}" class="sr-only">Email address</label>
+  <input id="{{ field_id }}" type="email" name="email" required maxlength="254" autocomplete="email" placeholder="Type your email…"
+    class="block w-full rounded-none px-3 py-3 text-sm focus:outline-none focus:ring-1 {% if dark %}border border-neutral-700 bg-neutral-800 text-white placeholder:text-neutral-400 focus:border-white focus:ring-white{% else %}border border-neutral-300 bg-white text-ink placeholder:text-neutral-400 focus:border-ink focus:ring-ink{% endif %}">
+  <button class="mt-2 block w-full py-3 text-[13px] font-semibold transition {% if dark %}border border-neutral-700 bg-neutral-800 text-white hover:bg-forest hover:border-forest{% else %}bg-ink text-white hover:bg-forest{% endif %}">Subscribe</button>
+</form>

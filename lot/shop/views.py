@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from core.models import Subscriber
 from core.utils import json_ld
 
 from .cart import Cart
@@ -43,18 +44,14 @@ def collection(request, category_slug=None):
     sort = request.GET.get("sort", "new")
     if sort not in SORTS:
         sort = "new"
-    products = products.order_by(*SORTS[sort][1])
-    return render(
-        request,
-        "shop/collection.html",
-        {
-            "category": category,
-            "categories": Category.objects.all(),
-            "products": products,
-            "sort": sort,
-            "sorts": [(key, label) for key, (label, _) in SORTS.items()],
-        },
-    )
+    products = list(products.order_by(*SORTS[sort][1]))
+    rows = []
+    if not category:
+        by_category = {}
+        for product in products:
+            by_category.setdefault(product.category_id, []).append(product)
+        rows = [(c, by_category[c.pk]) for c in Category.objects.all() if c.pk in by_category]
+    return render(request, "shop/collection.html", {"category": category, "products": products, "rows": rows})
 
 
 def product_detail(request, slug):
@@ -167,15 +164,15 @@ def checkout(request):
         return redirect("shop:cart")
 
     stripe_ready = bool(settings.STRIPE_SECRET_KEY)
-    initial = {}
-    if request.user.is_authenticated:
-        initial = {"email": request.user.email, "full_name": request.user.get_full_name()}
-    form = CheckoutForm(request.POST or None, initial=initial)
+    form = CheckoutForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         if cart.adjusted:
             messages.warning(request, "Stock changed while you were shopping. Please review your cart.")
             return redirect("shop:cart")
+        if form.cleaned_data["subscribe"]:
+            Subscriber.add(form.cleaned_data["email"], Subscriber.Source.CHECKOUT)
+            request.session["subscribed"] = True
         if not stripe_ready:
             messages.error(request, "Payments aren't configured yet. Add STRIPE_SECRET_KEY to your .env.")
         else:
@@ -202,7 +199,6 @@ def _start_stripe_checkout(request, cart, lines, data):
     currency = settings.STORE_CURRENCY
     with transaction.atomic():
         order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
             email=data["email"],
             full_name=data["full_name"],
             phone=data["phone"],

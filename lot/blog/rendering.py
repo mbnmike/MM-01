@@ -15,15 +15,25 @@ from django.utils.safestring import mark_safe
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
 
-PROSE_CLASSES = (
+_PROSE_BASE = (
     "post-body prose prose-lg prose-neutral max-w-none font-serif text-[1.15rem] md:text-[1.2rem] "
-    "prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-ink "
+    "prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight "
     "prose-h2:mt-14 prose-h2:text-[1.75rem] md:prose-h2:text-3xl prose-h3:text-2xl "
-    "prose-p:leading-[1.8] prose-li:leading-[1.75] prose-strong:text-ink "
-    "prose-a:text-forest prose-a:decoration-forest/40 prose-a:decoration-2 prose-a:underline-offset-4 "
-    "hover:prose-a:decoration-forest prose-blockquote:border-l-4 prose-blockquote:border-l-forest "
-    "prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-ink "
-    "prose-hr:my-14 prose-code:font-mono prose-code:text-[0.9em]"
+    "prose-p:leading-[1.8] prose-li:leading-[1.75] "
+    "prose-a:decoration-2 prose-a:underline-offset-4 prose-blockquote:border-l-4 prose-blockquote:border-l-forest "
+    "prose-blockquote:font-normal prose-blockquote:not-italic "
+    "prose-hr:my-14 prose-code:font-mono prose-code:text-[0.9em] "
+)
+# Light: the admin editor's preview pane.
+PROSE_CLASSES = _PROSE_BASE + (
+    "prose-headings:text-ink prose-strong:text-ink prose-blockquote:text-ink "
+    "prose-a:text-forest prose-a:decoration-forest/40 hover:prose-a:decoration-forest"
+)
+# Dark: published posts on the site.
+PROSE_DARK_CLASSES = _PROSE_BASE + (
+    "prose-invert prose-p:text-neutral-300 prose-li:text-neutral-300 prose-headings:text-white "
+    "prose-strong:text-white prose-blockquote:text-white prose-hr:border-white/10 "
+    "prose-a:text-forest-light prose-a:decoration-forest hover:prose-a:decoration-forest-light"
 )
 
 ALLOWED_TAGS = {

@@ -7,10 +7,10 @@
   <p class="eyebrow">Error 404</p>
   <h1 class="h-display mt-4 text-7xl md:text-[10rem]">Wrong<br>turn<span class="text-forest">.</span></h1>
   {% if store_enabled %}
-    <p class="mt-6 max-w-md text-neutral-600">That page doesn't exist, or it sold out and drove off.</p>
+    <p class="mt-6 max-w-md text-neutral-500">That page doesn't exist, or it sold out and drove off.</p>
     <a href="{% url 'shop:collection_all' %}" class="btn-primary mt-10">Back to the shop</a>
   {% else %}
-    <p class="mt-6 max-w-md text-neutral-600">That page doesn't exist.</p>
+    <p class="mt-6 max-w-md text-neutral-500">That page doesn't exist.</p>
     <a href="{% url 'core:home' %}" class="btn-primary mt-10">Back home</a>
   {% endif %}
 </div>

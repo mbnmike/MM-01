@@ -1,5 +1,5 @@
 <article class="group flex flex-col">
-  <a href="{{ post.get_absolute_url }}" class="relative block aspect-[3/2] overflow-hidden bg-ink" tabindex="-1" aria-hidden="true">
+  <a href="{{ post.get_absolute_url }}" class="relative block aspect-[3/2] overflow-hidden bg-neutral-900" tabindex="-1" aria-hidden="true">
     {% if post.card_image %}
       <img src="{{ post.card_image.url }}" alt="" loading="lazy" decoding="async" width="960" height="640"
         class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]">
@@ -7,8 +7,8 @@
       <span class="flex h-full w-full items-end bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_65%)] p-5 text-xl font-semibold leading-tight text-white/90">{{ post.title|truncatewords:8 }}</span>
     {% endif %}
   </a>
-  <h3 class="mt-4 text-xl font-semibold leading-snug tracking-[-0.01em] md:text-[1.35rem]">
-    <a href="{{ post.get_absolute_url }}" class="transition group-hover:text-forest">{{ post.title }}</a>
+  <h3 class="mt-4 text-xl font-semibold leading-snug tracking-[-0.01em] text-white md:text-[1.35rem]">
+    <a href="{{ post.get_absolute_url }}" class="transition group-hover:text-forest-light">{{ post.display_title }}</a>
   </h3>
   <div class="mt-2">{% include "blog/_meta.html" with tags=post.tags.all %}</div>
 </article>

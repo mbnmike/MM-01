@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Unsubscribe — {{ brand.name }}{% endblock %}
+{% block meta_extra %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block content %}
+<div class="container-x max-w-xl pt-16 md:pt-24">
+  {% if done %}
+    <h1 class="h-display text-4xl md:text-5xl">You're unsubscribed.</h1>
+    <p class="mt-4 text-neutral-400">You won't get any more emails from us. Changed your mind? Subscribe again any time from the bottom of the page.</p>
+  {% else %}
+    <h1 class="h-display text-4xl md:text-5xl">Unsubscribe?</h1>
+    {% if sub.is_active %}
+      <p class="mt-4 text-neutral-400">Stop sending newsletters and store updates to <strong class="text-white">{{ sub.email }}</strong>.</p>
+      <form method="post" class="mt-8">{% csrf_token %}<button class="btn-primary">Unsubscribe</button></form>
+    {% else %}
+      <p class="mt-4 text-neutral-400"><strong class="text-white">{{ sub.email }}</strong> is already unsubscribed.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from .models import SiteSettings
 
 # Pages that only make sense with the store on. The Stripe webhook stays reachable so
 # payments for orders placed before the switch still get recorded.
-STORE_ONLY_CORE_VIEWS = {"faq", "account", "account_order", "register", "login"}
+STORE_ONLY_CORE_VIEWS = {"faq"}
 
 
 class StoreSwitchMiddleware:

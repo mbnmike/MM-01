@@ -1,8 +1,8 @@
 {% extends "blog/base_blog.html" %}
 
-{% block title %}{% if preview %}Preview: {% endif %}{{ post.title }} — {{ brand.name }}{% endblock %}
+{% block title %}{% if preview %}Preview: {% endif %}{{ post.display_title }} — {{ brand.name }}{% endblock %}
 {% block meta_description %}{{ post.summary }}{% endblock %}
-{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_title %}{{ post.display_title }}{% endblock %}
 {% block og_description %}{{ post.summary }}{% endblock %}
 {% block meta_extra %}
   {% if preview %}
@@ -45,10 +45,10 @@
     <div class="mt-auto w-full px-4 pb-10 pt-28 sm:px-6 md:pb-14 lg:px-10">
       <div class="mx-auto max-w-5xl">
         <nav class="flex flex-wrap items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-white/75" aria-label="Breadcrumb">
-          <a href="{% url 'blog:list' %}" class="hover:text-white">Journal</a>
+          <a href="{% url 'blog:list' %}" class="hover:text-white">Articles</a>
           {% if post.published_month and post.is_live %}<span aria-hidden="true">/</span><a href="{% url 'blog:month' post.published_month.year post.published_month.month %}" class="hover:text-white">{{ post.published_month|date:"F Y" }}</a>{% endif %}
         </nav>
-        <h1 class="h-display mt-4 max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]">{{ post.title }}</h1>
+        <h1 class="h-display mt-4 max-w-4xl text-[2rem] sm:text-5xl lg:text-[3.6rem]">{% if post.category %}<span class="text-forest-light">{{ post.category.name }}:</span> {% endif %}{{ post.title }}</h1>
         <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
           {% include "blog/_meta.html" with tags=post_tags meta_class="text-sm text-white/85" %}
           {% if user.is_staff and not preview %}<a href="{% url 'admin:blog_post_change' post.pk %}" class="text-[12px] font-semibold uppercase tracking-[0.12em] text-white underline decoration-forest decoration-2 underline-offset-4">Edit post</a>{% endif %}
@@ -59,8 +59,8 @@
 
   <div class="mx-auto mt-12 w-full max-w-[44rem] px-4 sm:px-6 md:mt-16">
     {% if post.cover_caption %}<p class="-mt-6 mb-10 text-right text-xs text-neutral-500 md:-mt-10">{{ post.cover_caption }}</p>{% endif %}
-    {% if post.excerpt %}<p class="mb-10 font-serif text-xl leading-snug text-neutral-600 md:text-2xl">{{ post.excerpt }}</p>{% endif %}
-    <p class="mb-10 flex flex-wrap gap-x-4 border-b border-neutral-200 pb-5 text-[13px] text-neutral-500">
+    {% if post.excerpt %}<p class="mb-10 font-serif text-xl leading-snug text-neutral-400 md:text-2xl">{{ post.excerpt }}</p>{% endif %}
+    <p class="mb-10 flex flex-wrap gap-x-4 border-b border-white/10 pb-5 text-[13px] text-neutral-500">
       <span>{{ post.reading_minutes }} min read</span>
       {% if post.updated_on %}<span>Updated <time datetime="{{ post.updated_on|date:'Y-m-d' }}">{{ post.updated_on|date:"Y/m/d" }}</time></span>{% endif %}
     </p>
@@ -70,22 +70,22 @@
 
     {% if post_tags %}
       <ul class="mt-12 flex flex-wrap gap-2" aria-label="Tags">
-        {% for t in post_tags %}<li><a href="{{ t.get_absolute_url }}" class="inline-block border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition hover:border-ink hover:text-ink">#{{ t.name }}</a></li>{% endfor %}
+        {% for t in post_tags %}<li><a href="{{ t.get_absolute_url }}" class="inline-block border border-neutral-700 px-3 py-1.5 text-xs font-semibold text-neutral-300 transition hover:border-white hover:text-white">#{{ t.name }}</a></li>{% endfor %}
       </ul>
     {% endif %}
 
     {% if not preview %}
-      <div class="mt-10 flex flex-wrap items-center gap-2 border-y border-neutral-200 py-5">
+      <div class="mt-10 flex flex-wrap items-center gap-2 border-y border-white/10 py-5">
         <span class="eyebrow mr-3">Share</span>
-        <a class="border border-neutral-300 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-ink" target="_blank" rel="noopener"
+        <a class="border border-neutral-700 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-white" target="_blank" rel="noopener"
           href="https://twitter.com/intent/tweet?url={{ share_url|urlencode:'' }}&amp;text={{ post.title|urlencode:'' }}">X / Twitter</a>
-        <a class="border border-neutral-300 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-ink" target="_blank" rel="noopener"
+        <a class="border border-neutral-700 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-white" target="_blank" rel="noopener"
           href="https://www.facebook.com/sharer/sharer.php?u={{ share_url|urlencode:'' }}">Facebook</a>
-        <a class="border border-neutral-300 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-ink" target="_blank" rel="noopener"
+        <a class="border border-neutral-700 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-white" target="_blank" rel="noopener"
           href="https://pinterest.com/pin/create/button/?url={{ share_url|urlencode:'' }}&amp;description={{ post.title|urlencode:'' }}">Pinterest</a>
-        <a class="border border-neutral-300 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-ink"
+        <a class="border border-neutral-700 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-white"
           href="mailto:?subject={{ post.title|urlencode:'' }}&amp;body={{ share_url|urlencode:'' }}">Email</a>
-        <button type="button" data-copy="{{ share_url }}" class="border border-neutral-300 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-ink">Copy link</button>
+        <button type="button" data-copy="{{ share_url }}" class="border border-neutral-700 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition hover:border-white">Copy link</button>
       </div>
     {% endif %}
   </div>
@@ -93,21 +93,11 @@
   {% include "blog/_comments.html" %}
 </article>
 
-{% if related_products and store_enabled %}
-  <section class="container-x mt-24">
-    <p class="eyebrow">Shop the story</p>
-    <h2 class="h-display mt-2 text-3xl md:text-4xl">Gear from this post</h2>
-    <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:gap-x-6 lg:grid-cols-4">
-      {% for product in related_products %}{% include "partials/product_card.html" %}{% endfor %}
-    </div>
-  </section>
-{% endif %}
-
 {% if related_posts %}
-  <section class="container-x mt-24 border-t border-neutral-200 pt-12" aria-labelledby="related-heading">
+  <section class="container-x mt-24 border-t border-white/10 pt-12" aria-labelledby="related-heading">
     <div class="flex items-end justify-between gap-4">
       <h2 id="related-heading" class="h-display text-3xl md:text-4xl">Keep reading</h2>
-      <a href="{% url 'blog:list' %}" class="text-xs font-bold uppercase tracking-[0.18em] hover:text-forest">All posts →</a>
+      <a href="{% url 'blog:list' %}" class="text-xs font-bold uppercase tracking-[0.18em] hover:text-forest-light">All posts →</a>
     </div>
     <div class="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
       {% for post in related_posts %}{% include "blog/_card.html" %}{% endfor %}
