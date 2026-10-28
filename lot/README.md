@@ -11,6 +11,7 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate    macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # Windows: copy .env.example .env
+docker compose up -d            # local Postgres
 python manage.py migrate
 python manage.py seed           # demo products and prints, blog posts, shipping
 python manage.py createsuperuser   # your secret admin username + password
@@ -33,7 +34,7 @@ Open http://127.0.0.1:8000 for the store. The admin lives at the **secret path**
 | `ADMIN_URL` | Secret admin path, e.g. `studio-8f3kq29xz`. Required when `DEBUG=0`. Defaults to `admin` locally if unset. |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_EMAIL` | Only read by `manage.py ensure_admin`. Remove the password afterwards. |
 | `TRUST_X_FORWARDED_FOR` | `1` behind a proxy you control, so login/comment rate limits see real visitor IPs. |
-| `DATABASE_URL` | Unset = SQLite (`db.sqlite3`). Set e.g. `postgres://user:pass@host:5432/lot` for Postgres (the `psycopg` driver is in requirements). |
+| `DATABASE_URL` | Postgres URL, e.g. `postgres://user:pass@host:5432/lot`. Unset = the local Docker Postgres, `postgres://lot:lot@127.0.0.1:5432/lot`. |
 | `BLOG_MAX_UPLOAD_MB` | Max photo upload size (default 15). |
 | `S3_BUCKET` (+ `S3_ENDPOINT_URL`, `S3_REGION`, `S3_CUSTOM_DOMAIN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) | Optional: store uploads in S3/R2/B2 instead of `media/`. Needs `pip install "django-storages[s3]"`. |
 | `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL` | Outgoing email (comment notifications). Default prints to the console. |
@@ -180,9 +181,9 @@ Covers cart stock limits, sold-out hiding, the checkout → Stripe redirect (moc
 
 Blog tests (`blog/tests.py`) cover: Markdown rendering and sanitizing (scripts, event handlers, `javascript:` links); figures and galleries; draft and scheduled posts hidden from list, search, month archive, feed, and detail pages, even for logged-in non-staff users; month archive navigation; staff-only previews; save draft, publish, schedule, and unpublish; delete confirmation; autosave and restore; the upload pipeline (EXIF/GPS stripped, rotation fixed, resized, non-images rejected); the editor endpoints refusing non-staff; comment moderation, escaping, honeypot, token timing, rate limits, duplicates, blocked words, and email privacy; admin and login throttling; the secret admin path; and that public pages never reveal the admin URL.
 
-## Database: SQLite now, Postgres when you're ready
+## Database: Postgres
 
-Local development uses SQLite (`db.sqlite3`) as long as `DATABASE_URL` is unset. The project is ready for Postgres:
+The project uses Postgres. With `DATABASE_URL` unset it connects to the local Docker database, `postgres://lot:lot@127.0.0.1:5432/lot`, so start that before `migrate` or `runserver`:
 
 1. Get a Postgres database. Locally: `docker compose up -d` (Postgres 17 on 127.0.0.1:5432, user/password `lot`/`lot`), or install Postgres from postgresql.org. Hosted options (Neon, Supabase, Render, Railway) give you a ready-made URL. If you create the database yourself:
    ```sql
@@ -193,10 +194,10 @@ Local development uses SQLite (`db.sqlite3`) as long as `DATABASE_URL` is unset.
 2. In `.env`: `DATABASE_URL=postgres://lot:a-strong-password@127.0.0.1:5432/lot`
 3. `python manage.py migrate`, then `python manage.py createsuperuser` (and `seed` for demo content).
 
-Moving existing SQLite content into Postgres:
+Moving content from an old SQLite database into Postgres:
 
 ```bash
-# with DATABASE_URL unset (SQLite):
+# with DATABASE_URL=sqlite:///db.sqlite3:
 python manage.py dumpdata --natural-foreign --natural-primary -e contenttypes -e auth.permission -e sessions --indent 2 -o backup.json
 # then set DATABASE_URL to Postgres:
 python manage.py migrate

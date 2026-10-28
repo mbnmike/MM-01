@@ -7,8 +7,5 @@
       <span class="flex h-full w-full items-end bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_65%)] p-5 text-xl font-semibold leading-tight text-white/90">{{ post.title|truncatewords:8 }}</span>
     {% endif %}
   </a>
-  <h3 class="mt-4 text-xl font-semibold leading-snug tracking-[-0.01em] text-white md:text-[1.35rem]">
-    <a href="{{ post.get_absolute_url }}" class="transition group-hover:text-forest-light">{{ post.display_title }}</a>
-  </h3>
   <div class="mt-2">{% include "blog/_meta.html" with tags=post.tags.all %}</div>
 </article>

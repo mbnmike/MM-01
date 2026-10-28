@@ -9,9 +9,6 @@
       <span class="flex h-full w-full items-end bg-[radial-gradient(ellipse_at_top_right,_#2c570e_0%,_#0a0a0a_65%)] p-6 text-2xl font-semibold leading-tight text-white/90 md:p-10 md:text-4xl">{{ post.title|truncatewords:10 }}</span>
     {% endif %}
   </a>
-  <h3 class="mt-6 text-2xl font-semibold leading-tight tracking-[-0.02em] text-white md:text-[2.1rem]">
-    <a href="{{ post.get_absolute_url }}" class="transition group-hover:text-forest-light">{{ post.display_title }}</a>
-  </h3>
   {% if post.published_at %}
     <p class="mt-3 text-sm text-neutral-400">on <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"Y/m/d" }}</time></p>
   {% endif %}

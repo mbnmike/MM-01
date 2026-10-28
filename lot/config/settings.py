@@ -89,20 +89,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Unset DATABASE_URL = SQLite. For Postgres: postgres://user:password@host:5432/dbname
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.parse(
-            os.environ["DATABASE_URL"], conn_max_age=600, conn_health_checks=True
-        )
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+# Unset DATABASE_URL = the local Postgres from docker-compose.yml. Format: postgres://user:password@host:5432/dbname
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL", "postgres://lot:lot@127.0.0.1:5432/lot"),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -173,7 +167,9 @@ CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL", "$")
 LOW_STOCK_THRESHOLD = int(os.environ.get("LOW_STOCK_THRESHOLD", "3"))
 
 BRAND = {
-    "name": os.environ.get("BRAND_NAME", "!perfect"),    "tagline": "Car culture & motorsport",
+    "name": os.environ.get("BRAND_NAME", "!perfect"),
+    "name2": os.environ.get("BRAND_NAME2") or os.environ.get("BRAND_NAME", "!perfect"),
+    "tagline": "Car culture & motorsport",
     "description": "Builds, events, drives, and the people behind them.",
     "email": os.environ.get("BRAND_EMAIL", "hello@notperfect.example"),
     # Footer icons; any left blank are hidden.
